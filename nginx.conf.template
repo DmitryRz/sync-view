@@ -1,0 +1,18 @@
+server {
+    listen 80;
+    server_name ${DOMAIN_NAME};
+
+    # Проксирование API запросов к бэкенду
+    location /api/ {
+        proxy_pass http://backend:8080/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Проксирование всех остальных запросов к фронтенду
+    location / {
+        proxy_pass http://frontend:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
