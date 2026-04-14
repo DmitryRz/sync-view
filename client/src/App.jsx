@@ -1,33 +1,50 @@
 import { useState, useEffect } from 'react';
+import keycloak from "./auth/keycloak.js";
 
 function App() {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(keycloak.authenticated);
 
     useEffect(() => {
-        fetch('api/users/me')
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Ошибка при загрузке данных');
-                }
-                return response.json();
+        if (keycloak.authenticated) {
+            fetch('api/users/me', {
+                headers: { 'Authorization': `Bearer ${keycloak.token}` }
             })
-            .then((data) => setUser(data))
-            .catch((err) => setError(err.message));
+                .then(res => res.json())
+                .then(data => {
+                    console.log("User data fetched:", data);
+                    setUser(data);
+                    console.log(user)
+                    setLoading(false);
+                })
+                .catch(err => {
+                    setError(err.message);
+                    setLoading(false);
+                });
+        }
     }, []);
-
+    
     if (error) return <h1>Ошибка: {error}</h1>;
-    if (!user) return <h1>Загрузка...</h1>;
+
+    if (!keycloak.authenticated) {
+        return (
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                <h1>Вы не вошли в систему</h1>
+                <button onClick={() => keycloak.login()}>Войти (SSO)</button>
+            </div>
+        );
+    }
+
+    if (loading || !user) {
+        return <h1>Загрузка данных профиля... (User is {user ? 'ready' : 'null'})</h1>;
+    }
 
     return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
-            <img
-                src={user.avatar}
-                alt="Avatar"
-                style={{ borderRadius: '50%', width: '100px' }}
-            />
-            <h1>Привет, {user.username}!</h1>
-            <p>Твой email: {user.email}</p>
+            {user.avatar && <img src={user.avatar} alt="avatar" style={{ borderRadius: '50%' }} />}
+            <h1>Привет, {user.username}</h1>
+            <p>Email: {user.email}</p>
         </div>
     );
 }

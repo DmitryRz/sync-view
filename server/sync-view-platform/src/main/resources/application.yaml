@@ -29,6 +29,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/auth/realms/syncview
+          jwk-set-uri: http://localhost:8180/auth/realms/syncview/protocol/openid-connect/certs
 
 ---
 # --- ПРОФИЛЬ PROD ---
@@ -44,6 +50,12 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI}
 
 server:
   servlet:
