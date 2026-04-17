@@ -7,12 +7,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/auth': {
-        target: 'http://localhost:8180', // Адрес Keycloak, когда вы на хосте
+        target: 'http://localhost:8180',
         changeOrigin: true,
       },
       '/api': {
-        target: 'http://localhost:8080', // Адрес Бэкенда, когда вы на хосте
+        target: 'http://localhost:8080',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       }
     }
   }
