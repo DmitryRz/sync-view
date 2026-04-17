@@ -18,6 +18,9 @@ keycloak.init({
     checkLoginIframe: false
 })
 .then(authenticated => {
-    console.log("Success! Auth state:", authenticated);
     renderApp(authenticated);
 })
+.catch(error => {
+    console.error('Failed to initialize Keycloak:', error);
+    renderApp(false, 'Failed to initialize authentication');
+});

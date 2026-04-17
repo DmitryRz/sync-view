@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import keycloak from "./auth/keycloak.js";
 
-function App() {
+function App({ isAuth, authError }) {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(keycloak.authenticated);
@@ -34,6 +34,10 @@ function App() {
                 <button onClick={() => keycloak.login()}>Войти (SSO)</button>
             </div>
         );
+    }
+
+    if (authError) {
+        return <h1>Ошибка аутентификации: {authError}</h1>;
     }
 
     if (loading || !user) {
