@@ -1,5 +1,7 @@
 package io.github.dmitryrz.syncview.config;
 
+import io.github.dmitryrz.syncview.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -11,11 +13,14 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 public class CustomJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+    private final UserService userService;
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         Collection<GrantedAuthority> authorities = extractAuthorities(jwt);
+        userService.getOrCreateUserUuid(jwt.getSubject(), jwt.getClaimAsString("preferred_username"), jwt.getClaimAsString("email"));
         return new JwtAuthenticationToken(jwt, authorities, jwt.getSubject());
     }
 
