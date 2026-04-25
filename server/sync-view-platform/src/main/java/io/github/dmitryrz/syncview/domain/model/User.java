@@ -22,6 +22,9 @@ public class User {
 
     @Column(name = "email")
     private String email;
+
+    private String avatarUrl;
+
     @OneToMany(mappedBy = "owner")
     private List<Video> uploadedVideos;
 }
