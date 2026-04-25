@@ -3,11 +3,12 @@ package io.github.dmitryrz.syncview.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-@ToString
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,4 +22,6 @@ public class User {
 
     @Column(name = "email")
     private String email;
+    @OneToMany(mappedBy = "owner")
+    private List<Video> uploadedVideos;
 }
