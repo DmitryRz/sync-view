@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Header from "./components/header/Header.jsx";
-import VideoList from "./components/video/VideoList.jsx";
 import Sidebar from "./components/sidebar/Sidebar.jsx";
+import Home from "./page/Home.jsx";
+import {BrowserRouter, Routes, Route} from "react-router-dom";
 
 function App() {
     const [isDark, setIsDark] = useState(() => {
@@ -21,24 +22,31 @@ function App() {
     }, [isDark]);
 
     return (
-        <div className="bg-white dark:bg-[#0f0f0f] h-screen flex flex-col overflow-hidden transition-colors duration-300">
-            <Header
-                toggleTheme={() => setIsDark(!isDark)}
-                isDark={isDark}
-                toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
-            <div className="flex flex-1 overflow-hidden">
-                <Sidebar isOpen={isSidebarOpen} />
+        <BrowserRouter>
+            <div className="bg-white dark:bg-[#0f0f0f] h-screen flex flex-col overflow-hidden transition-colors duration-300">
+                <Header
+                    toggleTheme={() => setIsDark(!isDark)}
+                    isDark={isDark}
+                    toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+                />
+                <div className="flex flex-1 overflow-hidden">
+                    <Sidebar isOpen={isSidebarOpen} />
 
-                {isSidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-                        onClick={() => setIsSidebarOpen(false)}
-                    />
-                )}
-                <VideoList />
+                    {isSidebarOpen && (
+                        <div
+                            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+                            onClick={() => setIsSidebarOpen(false)}
+                        />
+                    )}
+                    <Routes>
+                        <Route
+                            path="/"
+                            element={<Home />}
+                        />
+                    </Routes>
+                </div>
             </div>
-        </div>
+        </BrowserRouter>
     );
 }
 
