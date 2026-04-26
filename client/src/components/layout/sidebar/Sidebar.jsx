@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, Globe, PlusCircle, Users, History } from 'lucide-react';
 
+// eslint-disable-next-line no-unused-vars
 const SidebarItem = ({ icon: Icon, label, active = false }) => (
     <a href="#" className={`flex items-center gap-5 p-2 rounded-lg transition-colors ${
         active
