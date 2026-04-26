@@ -11,7 +11,7 @@ const VideoList = () => {
 
     return (
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-[#0f0f0f] p-6 transition-colors">
-            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Recommended</h2>
+            <h2 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Video</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
                 {videos.map((vid, index) => (
                     <VideoCard key={index} {...vid} />

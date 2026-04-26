@@ -1,52 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import Header from "./components/header/Header.jsx";
-import Sidebar from "./components/sidebar/Sidebar.jsx";
+import React from 'react';
 import Home from "./page/Home.jsx";
 import {BrowserRouter, Routes, Route} from "react-router-dom";
+import MainLayout from "./components/layout/MainLayout.jsx";
+import {ThemeProvider} from "./context/ThemeProvider.jsx";
 
 function App() {
-    const [isDark, setIsDark] = useState(() => {
-        return localStorage.getItem('theme') === 'dark' ||
-            (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    });
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-    useEffect(() => {
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [isDark]);
-
     return (
-        <BrowserRouter>
-            <div className="bg-white dark:bg-[#0f0f0f] h-screen flex flex-col overflow-hidden transition-colors duration-300">
-                <Header
-                    toggleTheme={() => setIsDark(!isDark)}
-                    isDark={isDark}
-                    toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-                />
-                <div className="flex flex-1 overflow-hidden">
-                    <Sidebar isOpen={isSidebarOpen} />
-
-                    {isSidebarOpen && (
-                        <div
-                            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-                            onClick={() => setIsSidebarOpen(false)}
-                        />
-                    )}
-                    <Routes>
-                        <Route
-                            path="/"
-                            element={<Home />}
-                        />
-                    </Routes>
-                </div>
-            </div>
-        </BrowserRouter>
+        <ThemeProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<Home />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </ThemeProvider>
     );
 }
 
