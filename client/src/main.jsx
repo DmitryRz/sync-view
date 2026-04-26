@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import keycloak from "./auth/keycloak.js";
+import "./index.css"
 
 const renderApp = (authenticated, error = null) => {
     createRoot(document.getElementById('root')).render(
@@ -11,7 +12,6 @@ const renderApp = (authenticated, error = null) => {
     );
 };
 
-console.log(window.location.origin + '/silent-check-sso.html');
 
 keycloak.init({
     onLoad: 'check-sso',
