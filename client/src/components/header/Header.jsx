@@ -1,11 +1,11 @@
 import React from 'react';
 import { Menu, Search, Video, Bell, Sun, Moon } from 'lucide-react';
 
-const Header = ({ toggleTheme, isDark }) => {
+const Header = ({ toggleTheme, isDark, toggleSidebar }) => {
     return (
         <header className="h-14 px-4 flex items-center justify-between bg-white dark:bg-[#0f0f0f] border-b border-gray-200 dark:border-none sticky top-0 z-50 transition-colors">
             <div className="flex items-center gap-4">
-                <Menu className="cursor-pointer text-gray-700 dark:text-white" />
+                <Menu className="cursor-pointer text-gray-700 dark:text-white" onClick={toggleSidebar} />
                 <div className="text-2xl font-bold text-sky-600 dark:text-sky-400 italic tracking-tighter cursor-pointer">
                     My logo
                 </div>

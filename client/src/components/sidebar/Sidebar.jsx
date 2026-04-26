@@ -12,18 +12,23 @@ const SidebarItem = ({ icon: Icon, label, active = false }) => (
     </a>
 );
 
-const Sidebar = () => {
+const Sidebar = ({isOpen}) => {
     return (
-        <aside className="w-60 flex-shrink-0 overflow-y-auto bg-white dark:bg-[#0f0f0f] py-2 px-3 space-y-4 hidden lg:block border-r border-gray-100 dark:border-none">
+        <aside className={`
+            fixed lg:static inset-y-0 left-0 z-40
+            w-60 bg-white dark:bg-[#0f0f0f] border-r border-gray-100 dark:border-none 
+            transition-all duration-300 transform
+            ${isOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'}
+            flex-shrink-0 overflow-y-auto py-2 px-3 space-y-4
+        `}>
             <nav className="space-y-1">
                 <SidebarItem icon={Home} label="Feed" active />
-                <SidebarItem icon={Globe} label="Public Rooms" /> {/* Новая кнопка */}
+                <SidebarItem icon={Globe} label="Public Rooms" />
                 <SidebarItem icon={PlusCircle} label="Create Room" />
             </nav>
 
             <hr className="border-gray-200 dark:border-gray-700" />
 
-            {/* Личное пространство */}
             <div>
                 <h3 className="px-2 py-1 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase italic">Personal</h3>
                 <nav className="mt-2 space-y-1">
@@ -34,7 +39,6 @@ const Sidebar = () => {
 
             <hr className="border-gray-200 dark:border-gray-700" />
 
-            {/* Друзья онлайн (очень важно для соц. платформы) */}
             <div>
                 <h3 className="px-2 py-1 text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase italic">Friends Online</h3>
                 <div className="mt-2 space-y-2 px-2">
