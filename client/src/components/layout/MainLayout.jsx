@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import {useTheme} from "../../context/ThemeProvider.jsx";
 import Sidebar from "./sidebar/Sidebar.jsx";
 import Header from "../header/Header.jsx";
+import {useTheme} from "../../context/ThemeContext.js";
 
 const MainLayout = () => {
     const { isDark, toggleTheme } = useTheme();
