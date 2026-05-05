@@ -6,6 +6,7 @@ import io.github.dmitryrz.syncview.domain.repository.UserRepository;
 import io.github.dmitryrz.syncview.domain.repository.VideoRepository;
 import io.github.dmitryrz.syncview.dto.request.VideoRequestDto;
 import io.github.dmitryrz.syncview.dto.response.VideoResponseDto;
+import io.github.dmitryrz.syncview.mapper.VideoMapper;
 import io.github.dmitryrz.syncview.service.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,34 +19,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class VideoServiceImpl implements VideoService {
+    private final VideoMapper videoMapper;
+
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
 
     @Override
     public List<VideoResponseDto> getVideoList() {
         return videoRepository.findAllWithOwners().stream()
-                .map(video -> VideoResponseDto.builder()
-                        .id(video.getId())
-                        .title(video.getTitle())
-                        .url(video.getUrl())
-                        .duration(video.getDuration())
-                        .ownerUsername(video.getOwner().getUsername())
-                        .createdAt(video.getCreatedAt())
-                        .build())
+                .map(videoMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public VideoResponseDto getVideoById(Long id) {
         return videoRepository.findById(id)
-                .map(video -> VideoResponseDto.builder()
-                        .id(video.getId())
-                        .title(video.getTitle())
-                        .url(video.getUrl())
-                        .duration(video.getDuration())
-                        .ownerUsername(video.getOwner().getUsername())
-                        .createdAt(video.getCreatedAt())
-                        .build())
+                .map(videoMapper::toResponseDto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Видео с таким ID не найдено"
                 ));
@@ -59,12 +48,7 @@ public class VideoServiceImpl implements VideoService {
                 )
         );
 
-        Video video = Video.builder()
-                .title(request.getTitle())
-                .url(request.getUrl())
-                .duration(request.getDuration())
-                .owner(owner)
-                .build();
+        Video video = videoMapper.toEntity(request, owner);
 
         videoRepository.save(video);
     }
