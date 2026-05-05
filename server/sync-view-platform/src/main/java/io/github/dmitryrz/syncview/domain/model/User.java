@@ -3,7 +3,8 @@ package io.github.dmitryrz.syncview.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -25,6 +26,9 @@ public class User {
 
     private String avatarUrl;
 
-    @OneToMany(mappedBy = "owner")
-    private List<Video> uploadedVideos;
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Video> uploadedVideos;
+
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Room> createdRooms = new HashSet<>();
 }
