@@ -1,17 +1,15 @@
 package io.github.dmitryrz.syncview.dto.response;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
 import java.util.UUID;
 
-@Getter
-@Setter
+@Value
 @Builder
 public class RoomResponseDto {
-    private UUID id;
-    private String name;
-    private String creator;
-    private String currentVideo;
+    UUID id;
+    String name;
+    String creator;
+    String currentVideo;
 }

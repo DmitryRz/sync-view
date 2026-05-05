@@ -1,12 +1,12 @@
 package io.github.dmitryrz.syncview.dto.request;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+@Value
 @Builder
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Jacksonized
 public class RoomRequestDto {
-    private String name;
+    String name;
 }

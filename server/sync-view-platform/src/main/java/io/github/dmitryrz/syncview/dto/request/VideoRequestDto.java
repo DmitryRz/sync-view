@@ -1,14 +1,13 @@
 package io.github.dmitryrz.syncview.dto.request;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 @Builder
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Value
+@Jacksonized
 public class VideoRequestDto {
-    private String title;
-    private String url;
-    private Integer duration;
+    String title;
+    String url;
+    Integer duration;
 }

@@ -1,19 +1,17 @@
 package io.github.dmitryrz.syncview.dto.response;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Value;
 
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
+@Value
 @Builder
 public class VideoResponseDto {
-    private Long id;
-    private String title;
-    private String url;
-    private Integer duration;
-    private String ownerUsername;
-    private LocalDateTime createdAt;
+    Long id;
+    String title;
+    String url;
+    Integer duration;
+    String ownerUsername;
+    LocalDateTime createdAt;
 }
