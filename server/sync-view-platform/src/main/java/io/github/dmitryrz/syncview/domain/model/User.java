@@ -16,7 +16,7 @@ import java.util.Set;
 public class User {
     @Id
     @Column(name = "uuid")
-    private String uuid;
+    private String uuid; // TODO: Оптимизировать тип данных. Сменить String на java.util.UUID.
 
     @Column(name = "username")
     private String username;
