@@ -16,6 +16,7 @@ import java.util.UUID;
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "uuid", columnDefinition = "uuid")
     private UUID id;
 
     @Column(nullable = false)
