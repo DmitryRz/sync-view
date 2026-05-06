@@ -8,6 +8,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -16,7 +18,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Cacheable(value = "users_uuid", key = "#sub")
-    public String getOrCreateUserUuid(String sub, String username, String email) {
+    public UUID getOrCreateUserUuid(UUID sub, String username, String email) {
         return userRepository.findById(sub)
                 .map(User::getUuid)
                 .orElseGet(() -> transactionTemplate.execute(status -> {

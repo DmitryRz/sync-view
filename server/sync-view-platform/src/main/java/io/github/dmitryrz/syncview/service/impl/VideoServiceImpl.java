@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +42,7 @@ public class VideoServiceImpl implements VideoService {
     }
 
     @Override
-    public void createVideo(String userId, VideoRequestDto request) {
+    public void createVideo(UUID userId, VideoRequestDto request) {
         User owner = userRepository.findById(userId).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Пользователь с таким ID не найден"

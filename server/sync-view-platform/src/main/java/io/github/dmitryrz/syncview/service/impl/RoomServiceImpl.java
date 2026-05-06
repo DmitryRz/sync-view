@@ -45,8 +45,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public RoomResponseDto createRoom(RoomRequestDto request, String subject) {
-        User user = userRepository.getReferenceById(subject);
+    public RoomResponseDto createRoom(RoomRequestDto request, UUID userUuid) {
+        User user = userRepository.getReferenceById(userUuid);
         Video video = videoRepository.findById(request.getVideoId()).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Видео с таким ID не найдено"
@@ -58,7 +58,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public RoomResponseDto updateRoom(UUID id, RoomRequestDto request, String userUuid) {
+    public RoomResponseDto updateRoom(UUID id, RoomRequestDto request, UUID userUuid) {
         Room room = roomRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Комната с таким ID не найдена"
@@ -84,7 +84,7 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     @Transactional
-    public void deleteRoom(UUID id, String userUuid) {
+    public void deleteRoom(UUID id, UUID userUuid) {
         Room room = roomRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Комната с таким ID не найдена"

@@ -4,6 +4,7 @@ import io.github.dmitryrz.syncview.dto.request.VideoRequestDto;
 import io.github.dmitryrz.syncview.dto.response.VideoResponseDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface VideoService {
 
@@ -11,5 +12,5 @@ public interface VideoService {
 
     VideoResponseDto getVideoById(Long id);
 
-    void createVideo(String userId, VideoRequestDto request);
+    void createVideo(UUID userId, VideoRequestDto request);
 }

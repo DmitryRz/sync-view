@@ -1,5 +1,7 @@
 package io.github.dmitryrz.syncview.service;
 
+import java.util.UUID;
+
 public interface UserService {
-    String getOrCreateUserUuid(String sub, String username, String email);
+    UUID getOrCreateUserUuid(UUID sub, String username, String email);
 }

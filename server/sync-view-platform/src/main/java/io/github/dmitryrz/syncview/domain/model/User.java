@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -15,8 +16,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class User {
     @Id
-    @Column(name = "uuid")
-    private String uuid; // TODO: Оптимизировать тип данных. Сменить String на java.util.UUID.
+    @Column(name = "uuid", columnDefinition = "UUID")
+    private UUID uuid;
 
     @Column(name = "username")
     private String username;

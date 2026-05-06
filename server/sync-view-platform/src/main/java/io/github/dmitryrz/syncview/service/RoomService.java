@@ -11,9 +11,9 @@ public interface RoomService {
 
     RoomResponseDto getRoom(UUID id);
 
-    RoomResponseDto createRoom(RoomRequestDto request, String subject);
+    RoomResponseDto createRoom(RoomRequestDto request, UUID userUuid);
 
-    RoomResponseDto updateRoom(UUID id, RoomRequestDto request, String userUuid);
+    RoomResponseDto updateRoom(UUID id, RoomRequestDto request, UUID userUuid);
 
-    void deleteRoom(UUID id, String userUuid);
+    void deleteRoom(UUID id, UUID userUuid);
 }
