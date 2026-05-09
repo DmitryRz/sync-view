@@ -1,5 +1,6 @@
 package io.github.dmitryrz.syncview.service;
 
+import io.github.dmitryrz.syncview.domain.model.UserPrincipal;
 import io.github.dmitryrz.syncview.dto.response.UserResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,7 +11,7 @@ public interface UserService {
 
     UserResponseDto getCurrentProfile(UUID uuid);
 
-    String uploadAvatar(UUID userId, MultipartFile file);
+    String uploadAvatar(UserPrincipal principal, MultipartFile file);
 
     String getAvatar(UUID uuid);
 }

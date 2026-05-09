@@ -33,7 +33,7 @@ public class UserController {
 
     @PostMapping(value = "/upload-avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadAvatar(@AuthenticationPrincipal UserPrincipal principal, @RequestParam("avatar") MultipartFile file) {
-        String url = userService.uploadAvatar(principal.uuid(), file);
+        String url = userService.uploadAvatar(principal, file);
 
         return ResponseEntity.ok(Map.of("avatar", url));
     }

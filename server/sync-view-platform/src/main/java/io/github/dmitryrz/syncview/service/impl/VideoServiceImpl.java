@@ -8,19 +8,18 @@ import io.github.dmitryrz.syncview.domain.repository.VideoRepository;
 import io.github.dmitryrz.syncview.dto.request.VideoRequestDto;
 import io.github.dmitryrz.syncview.dto.response.VideoResponseDto;
 import io.github.dmitryrz.syncview.mapper.VideoMapper;
+import io.github.dmitryrz.syncview.service.FileService;
 import io.github.dmitryrz.syncview.service.VideoService;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class VideoServiceImpl implements VideoService {
@@ -29,13 +28,8 @@ public class VideoServiceImpl implements VideoService {
     private final VideoRepository videoRepository;
     private final UserRepository userRepository;
 
-    private final MinioClient minioClient;
+    private final FileService fileService;
 
-    @Value("${minio.bucket}")
-    private String bucketName;
-
-    @Value("${minio.endpoint}")
-    private String minioUrl;
 
     @Override
     public List<VideoResponseDto> getVideoList() {
@@ -61,21 +55,8 @@ public class VideoServiceImpl implements VideoService {
                 )
         );
 
-        String objectName = "videos/" + principal.username() + "/" + UUID.randomUUID();
-        String videoUrl = String.format("%s/%s/%s", minioUrl, bucketName, objectName);
-
-        try {
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .contentType(request.getFile().getContentType())
-                            .stream(request.getFile().getInputStream(), request.getFile().getSize(), -1)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
+        String objectName = fileService.uploadFile(request.getFile(), "videos", principal.username());
+        String videoUrl = fileService.buildFullUrl(objectName);
 
         Video video = Video.builder()
                 .owner(owner)
@@ -83,7 +64,13 @@ public class VideoServiceImpl implements VideoService {
                 .url(videoUrl)
                 .build();
 
-        Video saveVideo = videoRepository.save(video);
-        return videoMapper.toResponseDto(saveVideo);
+        try {
+            Video saveVideo = videoRepository.save(video);
+            return videoMapper.toResponseDto(saveVideo);
+        } catch (RuntimeException e) {
+            fileService.deleteFile(objectName);
+            log.error("Не удалось сохранить запись в базу данных: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Ошибка сохранения");
+        }
     }
 }
