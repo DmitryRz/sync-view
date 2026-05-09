@@ -22,8 +22,8 @@ public class MinioServiceImpl implements FileService {
     @Value("${minio.bucket}")
     private String bucketName;
 
-    @Value("${minio.endpoint}")
-    private String minioUrl;
+    @Value("${minio.public-endpoint}")
+    private String minioPublicUrl;
 
     @Override
     public String uploadFile(MultipartFile file, String folder, String user) {
@@ -57,6 +57,6 @@ public class MinioServiceImpl implements FileService {
 
     @Override
     public String buildFullUrl(String objectName) {
-        return minioUrl + "/" + objectName;
+        return minioPublicUrl + "/" + bucketName + "/" + objectName;
     }
 }
