@@ -3,6 +3,10 @@ spring:
     active: ${APP_PROFILE:dev}
   application:
     name: syncview
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
 
 management:
   endpoints:
@@ -43,6 +47,7 @@ minio:
   bucket: uploads
   access-key: random-access-key
   secret-key: random-secret-key
+
 
 ---
 # --- ПРОФИЛЬ PROD ---
