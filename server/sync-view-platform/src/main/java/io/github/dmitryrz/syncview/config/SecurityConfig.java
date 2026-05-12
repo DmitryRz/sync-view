@@ -22,9 +22,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/users/{uuid}/avatar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/rooms/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/rooms/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/rooms/**").authenticated()

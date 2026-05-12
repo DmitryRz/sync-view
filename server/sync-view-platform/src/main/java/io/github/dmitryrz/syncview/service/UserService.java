@@ -4,6 +4,7 @@ import io.github.dmitryrz.syncview.domain.model.UserPrincipal;
 import io.github.dmitryrz.syncview.dto.response.UserResponseDto;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -14,4 +15,6 @@ public interface UserService {
     String uploadAvatar(UserPrincipal principal, MultipartFile file);
 
     String getAvatar(UUID uuid);
+
+    List<UserResponseDto> getListUsers();
 }

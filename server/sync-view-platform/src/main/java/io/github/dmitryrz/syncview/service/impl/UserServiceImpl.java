@@ -9,6 +9,7 @@ import io.github.dmitryrz.syncview.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,11 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto getCurrentProfile(UUID uuid) {
         return userRepository.findById(uuid)
-                .map(user -> UserResponseDto.builder()
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .avatar(user.getAvatarUrl())
-                        .build())
+                .map(this::toDto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Пользователь с таким ID не найден"
                 ));
@@ -77,5 +75,19 @@ public class UserServiceImpl implements UserService {
         return userRepository.findById(uuid).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Пользователь с таким ID не найден"
         )).getAvatarUrl();
+    }
+
+    @Override
+    public List<UserResponseDto> getListUsers() {
+        return userRepository.findAll(PageRequest.of(0, 10)).stream().map(this::toDto).toList();
+    }
+
+    private UserResponseDto toDto(User user) {
+        return UserResponseDto.builder()
+                .uuid(user.getUuid())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .avatar(user.getAvatarUrl())
+                .build();
     }
 }

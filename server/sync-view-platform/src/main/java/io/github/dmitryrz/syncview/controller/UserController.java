@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -45,5 +46,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(avatarUrl))
                 .build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponseDto>> getListUsers() {
+        List<UserResponseDto> users = userService.getListUsers();
+
+        return ResponseEntity.ok(users);
     }
 }
