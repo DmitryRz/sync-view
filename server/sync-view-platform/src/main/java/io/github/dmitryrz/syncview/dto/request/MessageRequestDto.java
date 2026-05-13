@@ -9,7 +9,6 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 @AllArgsConstructor
-public class RoomRequestDto {
-    Long videoId;
-    String name;
+public class MessageRequestDto {
+    String message;
 }

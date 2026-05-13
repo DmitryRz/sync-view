@@ -4,6 +4,8 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.web.multipart.MultipartFile;
 
+@AllArgsConstructor
+@Jacksonized
 @Builder
 @Value
 public class VideoRequestDto {
