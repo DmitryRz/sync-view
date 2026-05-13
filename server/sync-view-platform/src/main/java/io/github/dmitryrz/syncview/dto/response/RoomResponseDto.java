@@ -9,6 +9,7 @@ import java.util.UUID;
 @Builder
 public class RoomResponseDto {
     UUID id;
+    Long videoId;
     String name;
     String creator;
     String currentVideo;

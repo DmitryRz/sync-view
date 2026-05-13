@@ -15,5 +15,6 @@ public interface RoomMapper {
 
     @Mapping(target = "currentVideo", source = "currentVideo.url")
     @Mapping(target = "creator", source = "creator.username")
+    @Mapping(target = "videoId", source = "currentVideo.id")
     RoomResponseDto toDto(Room room);
 }
