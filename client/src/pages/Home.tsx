@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import Header from "@/components/layout/Header.tsx"
 import Sidebar, { type ErrorInfo } from "@/components/layout/Sidebar.tsx"
-import Video from "@/pages/Video.tsx"
 import axios from "axios"
 import VideoCard from "@/components/VideoCard.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import { ErrorState } from "@/components/ui/ErrorState.tsx"
 
-export type Video = {
+export type VideoType = {
   id: number
   title: string
   url: string
@@ -19,7 +18,7 @@ export type Video = {
 
 const Home = () => {
   const [isOpen, setIsOpen] = useState(true);
-  const [videos, setVideos] = useState<Video[]>([]);
+  const [videos, setVideos] = useState<VideoType[]>([]);
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<ErrorInfo | null>(null);
 
@@ -32,7 +31,7 @@ const Home = () => {
         setLoading(true);
       }
 
-      const response = await axios.get<Video[]>("/api/videos", {
+      const response = await axios.get<VideoType[]>("/api/videos", {
         signal: controller.signal,
       })
 

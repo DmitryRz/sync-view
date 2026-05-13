@@ -19,21 +19,15 @@ import { VideoPlayer } from "@/components/VideoPlayer.tsx"
 import { ChatPanel, type ChatVariant } from "@/components/ChatPanel.tsx"
 import axios from "axios"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
+import type { VideoType } from "@/pages/Home.tsx"
 
 
-type Video = {
-  "createdAt": string,
-  "duration": null,
-  "id": number
-  "ownerUsername": string,
-  "title": string,
-  "url": string
-}
+
 const Video = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { roomId } = useParams();
 
-  const [video, setVideo] = useState<Video | null>(null);
+  const [video, setVideo] = useState<VideoType | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
