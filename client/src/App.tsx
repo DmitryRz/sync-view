@@ -5,6 +5,7 @@ import keycloak from "@/lib/keycloak.ts"
 import { AuthErrorPage } from "@/pages/AuthErrorPage.tsx"
 import Video from "@/pages/Video.tsx"
 import { NotFoundPage } from "@/pages/NotFoundPage.tsx"
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -42,7 +43,7 @@ export function App() {
   }
 
   if (!isInitialized) {
-    return <div>Загрузка системы безопасности...</div>;
+    return <LoadingSpinner>Загрузка системы безопасности...</LoadingSpinner>;
   }
 
   return (
