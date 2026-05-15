@@ -17,7 +17,7 @@ export function App() {
       isTargetStarted.current = true;
 
     keycloak
-      .init({ onLoad: 'check-sso', checkLoginIframe: false })
+      .init({ onLoad: 'check-sso', checkLoginIframe: true })
       .then((authenticated) => {
         console.log("Успешная инициализация", authenticated);
         setIsInitialized(true);
@@ -26,18 +26,23 @@ export function App() {
         console.error("Ошибка Keycloak:", err);
         setError("Сервер Keycloak временно недоступен.");
       });
-  });
+  }, []);
 
+  const handleSkipAuth = () => {
+    setError(null);
+    setIsInitialized(true);
+  };
 
+  const handleRetryAuth = () => {
+    window.location.reload();
+  };
 
   if (error) {
     return (
       <AuthErrorPage
         message={error}
-        onRetry={() => {
-          isTargetStarted.current = false;
-          setError(null);
-        }}
+        onRetry={handleRetryAuth}
+        onSkip={handleSkipAuth}
       />
     );
   }

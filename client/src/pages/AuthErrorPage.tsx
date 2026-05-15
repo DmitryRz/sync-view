@@ -10,9 +10,10 @@ import { Link } from "react-router-dom"
 interface AuthErrorPageProps {
   message?: string
   onRetry?: () => void
+  onSkip?: () => void
 }
 
-export const AuthErrorPage = ({ message, onRetry }: AuthErrorPageProps) => {
+export const AuthErrorPage = ({ message, onRetry, onSkip }: AuthErrorPageProps) => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 selection:bg-primary/10">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -45,7 +46,7 @@ export const AuthErrorPage = ({ message, onRetry }: AuthErrorPageProps) => {
             <Button
               variant="default"
               className="h-11 flex-1 gap-2 rounded-full"
-              onClick={() => window.location.reload()}
+              onClick={onRetry}
             >
               <RefreshCw className="h-4 w-4" />
               Повторить
@@ -55,7 +56,7 @@ export const AuthErrorPage = ({ message, onRetry }: AuthErrorPageProps) => {
               variant="outline"
               asChild
               className="h-11 flex-1 gap-2 rounded-full border-border bg-transparent hover:bg-secondary/50"
-              onClick={onRetry}
+              onClick={onSkip}
             >
               <Link to="/">
                 <Home className="h-4 w-4" />
