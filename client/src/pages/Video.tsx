@@ -19,8 +19,7 @@ import { VideoPlayer } from "@/components/VideoPlayer.tsx"
 import { ChatPanel, type ChatVariant } from "@/components/ChatPanel.tsx"
 import axios from "axios"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
-import type { VideoType } from "@/pages/Home.tsx"
-
+import type { VideoType } from "@/types/video/Video.ts"
 
 
 const Video = () => {
