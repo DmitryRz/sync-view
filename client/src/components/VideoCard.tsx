@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import keycloak from "@/lib/keycloak.ts"
-import type { VideoType } from "@/pages/Home.tsx"
+import type { VideoType } from "@/types/video/Video.ts"
 
 const VideoCard = ({ video }: { video: VideoType }) => {
   const navigate = useNavigate();
