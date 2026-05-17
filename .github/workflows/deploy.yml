@@ -3,16 +3,81 @@ name: CI/CD Deploy
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'server/**'
+      - 'client/**'
+      - 'docker-compose.yml'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  deploy:
+  deploy-backend:
     runs-on: self-hosted
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      - name: Deploy Docker Compose
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Check if server changed
+        id: check-changes
         run: |
-          docker compose build frontend backend
-          docker compose up -d
+          if git diff --name-only HEAD~1 | grep -q '^server/'; then
+            echo "server=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Update Backend
+        if: steps.check-changes.outputs.server == 'true' || contains(github.event.head_commit.message, '[force build]')
+        run: |
+          docker compose build backend
+          docker compose up -d backend
+
+  deploy-frontend:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Check if client changed
+        id: check-changes
+        run: |
+          if git diff --name-only HEAD~1 | grep -q '^client/'; then
+            echo "client=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Update Frontend
+        if: steps.check-changes.outputs.client == 'true' || contains(github.event.head_commit.message, '[force build]')
+        run: |
+          docker compose build frontend
+          docker compose up -d frontend
+
+  deploy-global:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Check global files
+        id: check-changes
+        run: |
+          if git diff --name-only HEAD~1 | grep -q -E 'docker-compose.yml|nginx.conf.template|.env'; then
+            echo "global=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Restart whole stack
+        if: steps.check-changes.outputs.global == 'true'
+        run: docker compose up -d
