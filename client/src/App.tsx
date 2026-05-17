@@ -17,15 +17,36 @@ export function App() {
       isTargetStarted.current = true;
 
     keycloak
-      .init({ onLoad: 'check-sso', checkLoginIframe: true })
+      .init({
+        onLoad: "check-sso",
+        checkLoginIframe: true,
+        silentCheckSsoRedirectUri:
+          window.location.origin + "/auth/silent-check-sso.html",
+      })
       .then((authenticated) => {
-        console.log("Успешная инициализация", authenticated);
         setIsInitialized(true);
+
+        if (authenticated) {
+          const tokenRefreshInterval = setInterval(() => {
+            keycloak
+              .updateToken(70)
+              .then((refreshed) => {
+                if (refreshed) {
+
+                }
+              })
+              .catch(() => {
+                keycloak.login();
+              });
+          }, 60000);
+
+          return () => clearInterval(tokenRefreshInterval);
+        }
       })
       .catch((err) => {
-        console.error("Ошибка Keycloak:", err);
-        setError("Сервер Keycloak временно недоступен.");
-      });
+        console.error("Ошибка Keycloak:", err)
+        setError("Сервер Keycloak временно недоступен.")
+      })
   }, []);
 
   const handleSkipAuth = () => {
