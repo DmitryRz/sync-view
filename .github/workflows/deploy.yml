@@ -1,0 +1,18 @@
+name: CI/CD Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Docker Compose
+        run: |
+          docker compose build frontend backend
+          docker compose up -d
