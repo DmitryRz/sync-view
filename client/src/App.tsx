@@ -6,6 +6,8 @@ import { AuthErrorPage } from "@/pages/AuthErrorPage.tsx"
 import Video from "@/pages/Video.tsx"
 import { NotFoundPage } from "@/pages/NotFoundPage.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
+import { NotImplementedCardPage } from "@/pages/NotImplementedCardPage.tsx"
+import { StompProvider } from "@/context/StompProvider.tsx"
 
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -17,15 +19,35 @@ export function App() {
       isTargetStarted.current = true;
 
     keycloak
-      .init({ onLoad: 'check-sso', checkLoginIframe: true })
+      .init({
+        onLoad: "check-sso",
+        checkLoginIframe: true,
+        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
+      })
       .then((authenticated) => {
-        console.log("Успешная инициализация", authenticated);
         setIsInitialized(true);
+
+        if (authenticated) {
+          const tokenRefreshInterval = setInterval(() => {
+            keycloak
+              .updateToken(70)
+              .then((refreshed) => {
+                if (refreshed) {
+                  console.log("Refresh token", refreshed);
+                }
+              })
+              .catch(() => {
+                keycloak.login();
+              });
+          }, 60000);
+
+          return () => clearInterval(tokenRefreshInterval);
+        }
       })
       .catch((err) => {
-        console.error("Ошибка Keycloak:", err);
-        setError("Сервер Keycloak временно недоступен.");
-      });
+        console.error("Ошибка Keycloak:", err)
+        setError("Сервер Keycloak временно недоступен.")
+      })
   }, []);
 
   const handleSkipAuth = () => {
@@ -54,7 +76,9 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/watch/:roomId" element={<Video />} />
+      <Route path="/watch/:roomId" element={<StompProvider><Video /></StompProvider>} />
+      <Route path="/video/:videoId" element={<NotImplementedCardPage />} />
+      <Route path="/rooms" element={<NotImplementedCardPage />} />
       <Route path="*" element={<NotFoundPage />} />
       <Route path="/keycloak-error" element={<AuthErrorPage />} />
     </Routes>

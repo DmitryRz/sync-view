@@ -36,6 +36,7 @@ public class VideoController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<VideoResponseDto> createVideo(@AuthenticationPrincipal UserPrincipal principal, @ModelAttribute VideoRequestDto request) {
+        log.info("Пользователь {} загрузил видео с названием: {}", principal.username(), request.getTitle());
         VideoResponseDto response = videoService.createVideo(principal, request);
         return ResponseEntity.created(URI.create(response.getUrl())).body(response);
     }

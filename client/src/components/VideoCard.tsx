@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
 import keycloak from "@/lib/keycloak.ts"
 import type { VideoType } from "@/types/video/Video.ts"
@@ -53,6 +53,17 @@ const VideoCard = ({ video }: { video: VideoType }) => {
             {video.title}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">{video.ownerUsername}</p>
+        </div>
+        <div className="shrink-0 mb-0.5">
+          <Link
+            to={`/video/${video.id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="inline-block rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
+          >
+            Смотреть одному
+          </Link>
         </div>
       </div>
     </div>

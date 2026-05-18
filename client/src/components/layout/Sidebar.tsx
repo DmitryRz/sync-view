@@ -81,7 +81,6 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
       setUsers(response.data)
     } catch (err) {
       if (axios.isCancel(err)) {
-        console.log("Запрос отменен")
         return
       }
 
@@ -102,7 +101,6 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
 
   useEffect(() => {
     const controller = new AbortController()
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUsers(controller)
     return () => controller.abort()
   }, [])

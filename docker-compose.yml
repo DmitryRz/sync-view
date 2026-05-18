@@ -2,6 +2,7 @@ services:
   db-keycloak:
     image: postgres:15
     container_name: postgres_keycloak
+    restart: always
     environment:
       POSTGRES_USER: ${KC_DB_USER}
       POSTGRES_PASSWORD: ${KC_DB_PASSWORD}
@@ -53,6 +54,7 @@ services:
   minio:
     image: minio/minio:RELEASE.2024-01-31T20-20-33Z
     container_name: minio
+    restart: always
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -149,6 +151,7 @@ services:
       - "80:80"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
+      PROTOCOL: ${PROTOCOL}
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:

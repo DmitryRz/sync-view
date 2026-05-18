@@ -6,11 +6,11 @@ import "video.js/dist/video-js.css";
 type Props = {
   src: string;
   poster?: string;
+  playerRef: React.MutableRefObject<Player | null>;
 };
 
-export function VideoPlayer({ src, poster }: Props) {
+export function VideoPlayer({ src, poster, playerRef }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const playerRef = useRef<Player | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -35,7 +35,7 @@ export function VideoPlayer({ src, poster }: Props) {
       playerRef.current?.dispose();
       playerRef.current = null;
     };
-  }, [src, poster]);
+  }, [src, poster, playerRef]);
 
   return <div ref={containerRef} data-vjs-player className="h-full w-full" />;
 }
