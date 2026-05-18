@@ -13,9 +13,15 @@ export function VideoPlayer({ src, poster, playerRef }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-    if (playerRef.current) return;
+    const isHls = src.includes(".m3u8");
+    const videoType = isHls ? "application/x-mpegURL" : "video/mp4";
 
+    if (playerRef.current) {
+      playerRef.current.src({ src, type: videoType });
+      return;
+    }
+
+    if (!containerRef.current) return;
     const videoEl = document.createElement("video-js");
     videoEl.classList.add("vjs-big-play-centered", "vjs-fill", "[&_video]:object-contain");
     containerRef.current.appendChild(videoEl);
@@ -24,11 +30,9 @@ export function VideoPlayer({ src, poster, playerRef }: Props) {
       controls: true,
       preload: "auto",
       poster,
-      sources: [{ src, type: "video/mp4" }],
+      sources: [{ src, type: videoType }],
       playbackRates: [0.5, 1, 1.25, 1.5, 2],
-      controlBar: {
-        fullscreenToggle: false
-      }
+      controlBar: { fullscreenToggle: false }
     });
 
     return () => {
