@@ -20,8 +20,7 @@ export function App() {
       .init({
         onLoad: "check-sso",
         checkLoginIframe: true,
-        silentCheckSsoRedirectUri:
-          window.location.origin + "/auth/silent-check-sso.html",
+        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html'
       })
       .then((authenticated) => {
         setIsInitialized(true);
@@ -32,7 +31,7 @@ export function App() {
               .updateToken(70)
               .then((refreshed) => {
                 if (refreshed) {
-
+                  console.log("Refresh token", refreshed);
                 }
               })
               .catch(() => {

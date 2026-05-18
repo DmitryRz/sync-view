@@ -20,7 +20,6 @@ export const useVideoUpload = (onSuccess?: () => void) => {
       await axios.post("/api/videos/upload", formData, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
       setIsUploadOpen(false);

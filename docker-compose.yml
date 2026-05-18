@@ -151,6 +151,7 @@ services:
       - "80:80"
     environment:
       DOMAIN_NAME: ${DOMAIN_NAME}
+      PROTOCOL: ${PROTOCOL}
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:
