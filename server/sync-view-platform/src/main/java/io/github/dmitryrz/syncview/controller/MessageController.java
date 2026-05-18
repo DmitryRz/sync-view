@@ -7,8 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -20,9 +22,15 @@ public class MessageController {
     private final MessageService messageService;
 
     @GetMapping
-    public ResponseEntity<Slice<MessageResponseDto>> getMessages(@PathVariable UUID roomId,
+    public ResponseEntity<Slice<MessageResponseDto>> getMessages(@PathVariable String roomId,
                                                                  @PageableDefault(size = 30, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Slice<MessageResponseDto> request = messageService.getMessages(roomId, pageable);
+        UUID roomUuid;
+        try {
+            roomUuid = UUID.fromString(roomId);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Room not found");
+        }
+        Slice<MessageResponseDto> request = messageService.getMessages(roomUuid, pageable);
         return ResponseEntity.ok(request);
     }
 }

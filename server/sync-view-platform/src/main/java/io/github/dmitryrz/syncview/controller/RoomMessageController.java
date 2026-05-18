@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Controller
@@ -44,7 +45,7 @@ public class RoomMessageController {
                 user.uuid(),
                 user.username(),
                 RoomEventType.JOIN,
-                System.currentTimeMillis()
+                LocalDateTime.now()
         );
 
         messagingTemplate.convertAndSend("/topic/" + roomId, event);
