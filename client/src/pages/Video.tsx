@@ -26,6 +26,9 @@ import type { MessageResponseDto, RoomEventDto, VideoSignalDto } from "@/types/w
 import { PlayerAction, RoomEventType } from "@/types/websocket/enums.ts";
 import { useStomp } from "@/context/StompContext.ts"
 
+type ChatItem =
+  | { type: "message"; data: MessageResponseDto }
+  | { type: "event"; data: RoomEventDto };
 
 const Video = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,8 +40,7 @@ const Video = () => {
   const videoPlayerRef = useRef<Player | null>(null);
   const isUpdatingPlayer = useRef<boolean>(false);
 
-  const [chatMessages, setChatMessages] = useState<MessageResponseDto[]>([]);
-  const [roomEvents, setRoomEvents] = useState<RoomEventDto[]>([]);
+  const [chatTimeline, setChatTimeline] = useState<ChatItem[]>([]);
 
   const userUuid = keycloak.idTokenParsed?.sub;
 
@@ -63,7 +65,11 @@ const Video = () => {
           url: roomResponse.data.currentVideo
         });
 
-        setChatMessages(messagesResponse.data.content);
+        const historyMessages = messagesResponse.data.content.reverse().map((m: MessageResponseDto) => ({
+          type: "message" as const,
+          data: m
+        }));
+        setChatTimeline(historyMessages);
 
       } catch (err) {
         console.error("Ошибка загрузки данных:", err);
@@ -107,11 +113,11 @@ const Video = () => {
         }
       } else if (parsedMessage.type) {
         const event = parsedMessage as RoomEventDto;
-        setRoomEvents((prev) => [...prev, event]);
+        setChatTimeline((prev) => [...prev, { type: "event", data: event }]);
         console.log(`User ${event.username} ${event.type === RoomEventType.JOIN ? "joined" : "left"} the room.`);
       } else {
         const chatMessage = parsedMessage as MessageResponseDto;
-        setChatMessages((prev) => [...prev, chatMessage]);
+        setChatTimeline((prev) => [...prev, { type: "message", data: chatMessage }]);
       }
     });
 
@@ -324,14 +330,14 @@ const Video = () => {
               {/* Fullscreen: чат сбоку — полная высота, справа */}
               {isFullscreen && variant === "side" && chatOpen && (
                 <div className="relative h-full w-[380px] border-l border-white/10 bg-card shrink-0 z-20">
-                  <ChatPanel variant="side" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
+                  <ChatPanel variant="side" onCollapse={() => setChatOpen(false)} onSendMessage={handleSendMessage} timeline={chatTimeline} />
                 </div>
               )}
 
               {/* Fullscreen: чат поверх — ~1/2 высоты экрана, справа снизу */}
               {isFullscreen && variant === "overlay" && chatOpen && (
                 <div className="absolute bottom-6 right-6 z-20 h-[50vh] w-[360px]">
-                  <ChatPanel variant="overlay" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
+                  <ChatPanel variant="overlay" onCollapse={() => setChatOpen(false)} onSendMessage={handleSendMessage} timeline={chatTimeline} />
                 </div>
               )}
             </div>
@@ -376,7 +382,7 @@ const Video = () => {
             >
               <div className="h-[70vh] lg:h-[calc(100vh-8rem)]">
                 {chatOpen ? (
-                  <ChatPanel variant="theater" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
+                  <ChatPanel variant="theater" onCollapse={() => setChatOpen(false)} onSendMessage={handleSendMessage} timeline={chatTimeline} />
                 ) : null}
               </div>
             </aside>
