@@ -7,6 +7,7 @@ import Video from "@/pages/Video.tsx"
 import { NotFoundPage } from "@/pages/NotFoundPage.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import { NotImplementedCardPage } from "@/pages/NotImplementedCardPage.tsx"
+import { StompProvider } from "@/context/StompProvider.tsx"
 
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -75,7 +76,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/watch/:roomId" element={<Video />} />
+      <Route path="/watch/:roomId" element={<StompProvider><Video /></StompProvider>} />
       <Route path="/video/:videoId" element={<NotImplementedCardPage />} />
       <Route path="/rooms" element={<NotImplementedCardPage />} />
       <Route path="*" element={<NotFoundPage />} />

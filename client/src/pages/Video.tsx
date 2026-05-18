@@ -20,6 +20,11 @@ import { ChatPanel, type ChatVariant } from "@/components/ChatPanel.tsx"
 import axios from "axios"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import type { VideoType } from "@/types/video/Video.ts"
+import keycloak from "@/lib/keycloak.ts";
+import type Player from "video.js/dist/types/player";
+import type { MessageResponseDto, RoomEventDto, VideoSignalDto } from "@/types/websocket/types.ts";
+import { PlayerAction, RoomEventType } from "@/types/websocket/enums.ts";
+import { useStomp } from "@/context/StompContext.ts"
 
 
 const Video = () => {
@@ -29,6 +34,17 @@ const Video = () => {
   const [video, setVideo] = useState<VideoType | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const videoPlayerRef = useRef<Player | null>(null);
+  const isUpdatingPlayer = useRef<boolean>(false);
+
+  const [chatMessages, setChatMessages] = useState<MessageResponseDto[]>([]);
+  const [roomEvents, setRoomEvents] = useState<RoomEventDto[]>([]);
+
+  const userUuid = keycloak.idTokenParsed?.sub;
+
+  const stompClient = useStomp();
+
+
   useEffect(() => {
     const fetchRoomAndVideo = async () => {
       try {
@@ -36,15 +52,19 @@ const Video = () => {
         const roomResponse = await axios.get(`/api/rooms/${roomId}`);
 
         const videoId = roomResponse.data.videoId;
-        console.log(roomResponse.data)
-        console.log("video id " + videoId);
 
-        const videoDetailResponse = await axios.get(`/api/videos/${videoId}`);
+        const [videoDetailResponse, messagesResponse] = await Promise.all([
+          axios.get(`/api/videos/${videoId}`),
+          axios.get(`/api/rooms/${roomId}/messages`)
+        ]);
 
         setVideo({
           ...videoDetailResponse.data,
           url: roomResponse.data.currentVideo
         });
+
+        setChatMessages(messagesResponse.data.content);
+
       } catch (err) {
         console.error("Ошибка загрузки данных:", err);
       } finally {
@@ -57,7 +77,109 @@ const Video = () => {
     }
   }, [roomId]);
 
+  useEffect(() => {
+    if (!stompClient || !roomId || !keycloak.token) return;
 
+    const topicPath = `/topic/${roomId}`;
+    const userUuid = keycloak.idTokenParsed?.sub;
+
+    const subscription = stompClient.subscribe(topicPath, (message) => {
+      const parsedMessage = JSON.parse(message.body);
+      if (parsedMessage.action) {
+        const signal = parsedMessage as VideoSignalDto;
+        if (signal.initiatorId !== userUuid && videoPlayerRef.current) {
+          isUpdatingPlayer.current = true;
+          switch (signal.action) {
+            case PlayerAction.PLAY:
+              videoPlayerRef.current.play();
+              break;
+            case PlayerAction.PAUSE:
+              videoPlayerRef.current.pause();
+              break;
+            case PlayerAction.SEEK:
+              videoPlayerRef.current.currentTime(signal.timestamp);
+              break;
+            case PlayerAction.RATE_CHANGE:
+              videoPlayerRef.current.playbackRate(signal.playbackRate);
+              break;
+          }
+          setTimeout(() => { isUpdatingPlayer.current = false; }, 100);
+        }
+      } else if (parsedMessage.type) {
+        const event = parsedMessage as RoomEventDto;
+        setRoomEvents((prev) => [...prev, event]);
+        console.log(`User ${event.username} ${event.type === RoomEventType.JOIN ? "joined" : "left"} the room.`);
+      } else {
+        const chatMessage = parsedMessage as MessageResponseDto;
+        setChatMessages((prev) => [...prev, chatMessage]);
+      }
+    });
+
+    stompClient.publish({
+      destination: `/app/room/${roomId}/join`,
+      headers: { 'Authorization': `Bearer ${keycloak.token}` },
+      skipContentLengthHeader: true,
+    });
+
+    return () => {
+      if (stompClient) {
+        subscription.unsubscribe();
+      }
+    };
+  }, [stompClient, roomId, userUuid]);
+
+  useEffect(() => {
+    const player = videoPlayerRef.current;
+    if (!player || !stompClient || !roomId || !keycloak.token) return;
+
+
+    const sendPlayerSignal = (action: PlayerAction, currentTimestamp?: number, playbackRate?: number) => {
+      if (!isUpdatingPlayer.current) {
+        const actualTimestamp = currentTimestamp !== undefined ? currentTimestamp : (player.currentTime() ?? 0);
+        const actualPlaybackRate = playbackRate !== undefined ? playbackRate : (player.playbackRate() ?? 1);
+
+        const signal: VideoSignalDto = {
+          action,
+          timestamp: actualTimestamp,
+          playbackRate: actualPlaybackRate,
+          sentAt: Date.now(),
+          initiatorId: userUuid || "unknown",
+        };
+        stompClient.publish({
+          destination: `/app/room/${roomId}/player`,
+          body: JSON.stringify(signal),
+          headers: { 'Authorization': `Bearer ${keycloak.token}`, 'content-type': 'application/json' },
+        });
+      }
+    };
+
+    const handlePlay = () => sendPlayerSignal(PlayerAction.PLAY, player.currentTime());
+    const handlePause = () => sendPlayerSignal(PlayerAction.PAUSE, player.currentTime());
+    const handleSeeked = () => sendPlayerSignal(PlayerAction.SEEK, player.currentTime());
+    const handleRateChange = () => sendPlayerSignal(PlayerAction.RATE_CHANGE, player.currentTime(), player.playbackRate());
+
+    player.on('play', handlePlay);
+    player.on('pause', handlePause);
+    player.on('seeked', handleSeeked);
+    player.on('ratechange', handleRateChange);
+
+    return () => {
+      player.off('play', handlePlay);
+      player.off('pause', handlePause);
+      player.off('seeked', handleSeeked);
+      player.off('ratechange', handleRateChange);
+    };
+  }, [stompClient, roomId, userUuid]);
+
+  const handleSendMessage = (message: string) => {
+    if (stompClient && roomId && keycloak.token) {
+      stompClient.publish({
+        destination: `/app/room/${roomId}/chat`,
+        body: JSON.stringify({ message: message }),
+        headers: { 'Authorization': `Bearer ${keycloak.token}`, 'content-type': 'application/json' },
+      });
+    }
+  };
 
   const [chatOpen, setChatOpen] = useState(true);
   const [variant, setVariant] = useState<ChatVariant>("theater");
@@ -75,13 +197,11 @@ const Video = () => {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  // Sync fullscreen state
   useEffect(() => {
     const onChange = () => {
       const fs = !!document.fullscreenElement;
       setIsFullscreen(fs);
       if (fs) {
-        // По умолчанию в fullscreen — чат сбоку
         setVariant((v) => (v === "theater" ? "side" : v));
         setChatOpen(true);
       } else {
@@ -133,6 +253,7 @@ const Video = () => {
               )}>
                 <VideoPlayer
                   src={video.url}
+                  playerRef={videoPlayerRef}
                 />
               </div>
 
@@ -203,14 +324,14 @@ const Video = () => {
               {/* Fullscreen: чат сбоку — полная высота, справа */}
               {isFullscreen && variant === "side" && chatOpen && (
                 <div className="relative h-full w-[380px] border-l border-white/10 bg-card shrink-0 z-20">
-                  <ChatPanel variant="side" onCollapse={() => setChatOpen(false)} />
+                  <ChatPanel variant="side" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
                 </div>
               )}
 
               {/* Fullscreen: чат поверх — ~1/2 высоты экрана, справа снизу */}
               {isFullscreen && variant === "overlay" && chatOpen && (
                 <div className="absolute bottom-6 right-6 z-20 h-[50vh] w-[360px]">
-                  <ChatPanel variant="overlay" onCollapse={() => setChatOpen(false)} />
+                  <ChatPanel variant="overlay" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
                 </div>
               )}
             </div>
@@ -255,7 +376,7 @@ const Video = () => {
             >
               <div className="h-[70vh] lg:h-[calc(100vh-8rem)]">
                 {chatOpen ? (
-                  <ChatPanel variant="theater" onCollapse={() => setChatOpen(false)} />
+                  <ChatPanel variant="theater" onCollapse={() => setChatOpen(false)} messages={chatMessages} onSendMessage={handleSendMessage} roomEvents={roomEvents} />
                 ) : null}
               </div>
             </aside>

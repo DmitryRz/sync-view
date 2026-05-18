@@ -1,275 +1,273 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>SyncView Test Client</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #chat-window { height: 300px; border: 1px solid #ddd; overflow-y: auto; margin-bottom: 15px; padding: 10px; border-radius: 4px; background: #fafafa; }
-        .controls { display: flex; flex-direction: column; gap: 10px; }
-        .row { display: flex; gap: 10px; align-items: center; }
-        input[type="text"], select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; }
-        button { padding: 10px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
-        button:hover { background: #0056b3; }
-        .event { font-style: italic; color: #777; font-size: 0.9em; text-align: center; margin: 5px 0; }
-        .error-msg { color: #dc3545; font-weight: bold; text-align: center; margin: 10px 0; }
-        .message { margin: 5px 0; padding: 5px 10px; border-radius: 4px; background: #e9ecef; }
-        .video-info { background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-top: 10px; font-size: 0.85em; }
-        .config-section { background: #eee; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ccc; }
-    </style>
+  <meta charset="UTF-8">
+  <title>SyncView Test Client</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <style>
+      body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+      #chat-window { height: 300px; border: 1px solid #ddd; overflow-y: auto; margin-bottom: 15px; padding: 10px; border-radius: 4px; background: #fafafa; }
+      .controls { display: flex; flex-direction: column; gap: 10px; }
+      .row { display: flex; gap: 10px; align-items: center; }
+      input[type="text"], select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; flex: 1; }
+      button { padding: 10px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+      button:hover { background: #0056b3; }
+      .event { font-style: italic; color: #777; font-size: 0.9em; text-align: center; margin: 5px 0; }
+      .video-info { background: #fff3cd; padding: 10px; border-radius: 4px; border: 1px solid #ffeeba; margin-top: 10px; font-size: 0.85em; }
+      .config-section { background: #eee; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ccc; }
+  </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="config-section">
-        <label><b>JWT Token:</b></label>
-        <div class="row" style="margin-top:5px;">
-            <input type="text" id="tokenInput" placeholder="Вставьте токен здесь...">
-            <button onclick="updateToken()" style="background: #28a745;">Обновить токен</button>
-        </div>
+  <div class="config-section">
+    <label prejudices for="tokenInput"><b>JWT Token:</b></label>
+    <div class="row" style="margin-top:5px;">
+      <input type="text" id="tokenInput" placeholder="Вставьте токен здесь...">
+      <button onclick="updateToken()" style="background: #28a745;">Обновить токен</button>
+    </div>
+  </div>
+
+  <div class="controls" style="margin-bottom: 20px;">
+    <label for="roomSelect">Выберите комнату:</label>
+    <div class="row">
+      <select id="roomSelect" onchange="switchRoom()">
+        <option value="">Сначала введите токен...</option>
+      </select>
+      <button onclick="fetchRooms()" style="background: #6c757d;">Обновить список</button>
+    </div>
+  </div>
+
+  <h2>ID: <span id="currentRoomIdDisplay">---</span></h2>
+
+  <div id="chat-window"></div>
+
+  <div class="controls">
+    <div class="row">
+      <!-- Исправлено: добавлен скрытый лейбл для доступности и прохождения валидации IDE -->
+      <label for="msgInput" style="display:none;">Сообщение</label>
+      <input type="text" id="msgInput" placeholder="Введите сообщение...">
+      <button onclick="sendChatMessage()">Отправить</button>
     </div>
 
-    <div class="controls" style="margin-bottom: 20px;">
-        <label>Выберите комнату:</label>
-        <div class="row">
-            <select id="roomSelect" onchange="switchRoom()">
-                <option value="">Сначала введите токен...</option>
-            </select>
-            <button onclick="fetchRooms()" style="background: #6c757d;">Обновить список</button>
-        </div>
+    <button onclick="loadChatHistory()" style="background: #17a2b8;">Загрузить историю сообщений</button>
+
+    <hr>
+
+    <!-- Исправлено: добавлен атрибут for для связи с ползунком видео -->
+    <label for="videoRange">Синхронизация видео: <b id="timeLabel">0.00</b>с</label>
+    <input type="range" id="videoRange" min="0" max="600" step="0.1" value="0" style="width:100%" onchange="sendVideoSignal('SEEK')">
+
+    <div style="display:flex; gap: 10px;">
+      <button style="flex:1; background: #28a745;" onclick="sendVideoSignal('PLAY')">PLAY</button>
+      <button style="flex:1; background: #dc3545;" onclick="sendVideoSignal('PAUSE')">PAUSE</button>
     </div>
+  </div>
 
-    <h2>ID: <span id="currentRoomIdDisplay">---</span></h2>
-    
-    <div id="chat-window"></div>
-
-    <div class="controls">
-        <div class="row">
-            <input type="text" id="msgInput" placeholder="Введите сообщение...">
-            <button onclick="sendChatMessage()">Отправить</button>
-        </div>
-        
-        <button onclick="loadChatHistory()" style="background: #17a2b8;">Загрузить историю сообщений</button>
-
-        <hr>
-        
-        <label>Синхронизация видео: <b id="timeLabel">0.00</b>с</label>
-        <input type="range" id="videoRange" min="0" max="600" step="0.1" value="0" style="width:100%" onchange="sendVideoSignal('SEEK')">
-        
-        <div style="display:flex; gap: 10px;">
-            <button style="flex:1; background: #28a745;" onclick="sendVideoSignal('PLAY')">PLAY</button>
-            <button style="flex:1; background: #dc3545;" onclick="sendVideoSignal('PAUSE')">PAUSE</button>
-        </div>
-    </div>
-
-    <div id="videoDebug" class="video-info">Статус: введите токен для подключения</div>
+  <div id="videoDebug" class="video-info">Статус: введите токен для подключения</div>
 </div>
 
 <script>
-    const API_BASE = "http://localhost:8080";
-    let stompClient = null;
-    let currentSubscription = null;
-    let currentRoomId = null;
+  const API_BASE = "http://localhost:8080";
+  let stompClient = null;
+  let currentSubscription = null;
+  let currentRoomId = null;
 
-    // ПЕРЕМЕННЫЕ ДЛЯ ЭМУЛЯЦИИ ВИДЕО
-    let isPlaying = false;
-    let playbackInterval = null;
+  // ПЕРЕМЕННЫЕ ДЛЯ ЭМУЛЯЦИИ ВИДЕО
+  let isPlaying = false;
+  let playbackInterval = null;
 
-    function getToken() {
-        return document.getElementById('tokenInput').value.trim();
+  function getToken() {
+    return document.getElementById('tokenInput').value.trim();
+  }
+
+  function updateToken() {
+    const token = getToken();
+    if (!token) {
+      alert("Введите токен!");
+      return;
     }
 
-    function updateToken() {
-        const token = getToken();
-        if (!token) {
-            alert("Введите токен!");
-            return;
+    if (stompClient) {
+      stompClient.disconnect(() => { console.log("Disconnected to change token"); });
+      stompClient = null;
+    }
+
+    document.getElementById('chat-window').innerHTML = '';
+    fetchRooms();
+  }
+
+  async function fetchRooms() {
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/rooms`);
+      if (!response.ok) {
+        throw new Error("Ошибка авторизации при получении комнат");
+      }
+
+      const rooms = await response.json();
+      const select = document.getElementById('roomSelect');
+      select.innerHTML = rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+
+      if (rooms.length > 0) switchRoom();
+    } catch (err) {
+      console.error(err);
+      document.getElementById('videoDebug').innerText = "Ошибка: " + err.message;
+    }
+  }
+
+  function switchRoom() {
+    const select = document.getElementById('roomSelect');
+    currentRoomId = select.value;
+    document.getElementById('currentRoomIdDisplay').innerText = currentRoomId;
+    document.getElementById('chat-window').innerHTML = '';
+
+    connectToWs();
+  }
+
+  // --- ЛОГИКА ЭМУЛЯЦИИ ХОДА ВРЕМЕНИ ---
+  function startTicker() {
+    if (playbackInterval) clearInterval(playbackInterval);
+
+    playbackInterval = setInterval(() => {
+      if (isPlaying) {
+        const range = document.getElementById('videoRange');
+        const label = document.getElementById('timeLabel');
+
+        let newValue = parseFloat(range.value) + 0.1;
+
+        if (newValue <= parseFloat(range.max)) {
+          range.value = newValue.toFixed(1);
+          label.innerText = newValue.toFixed(2);
+        } else {
+          isPlaying = false;
+          clearInterval(playbackInterval);
         }
-        
-        if (stompClient) {
-            stompClient.disconnect(() => { console.log("Disconnected to change token"); });
-            stompClient = null;
-        }
-        
-        document.getElementById('chat-window').innerHTML = '';
-        fetchRooms();
+      }
+    }, 100);
+  }
+
+  function stopTicker() {
+    clearInterval(playbackInterval);
+    playbackInterval = null;
+  }
+
+  function connectToWs() {
+    const token = getToken();
+    if (!token) return;
+
+    if (stompClient && stompClient.connected) {
+      if (currentSubscription) currentSubscription.unsubscribe();
+      subscribeToRoom();
+      return;
     }
 
-    async function fetchRooms() {
-        const token = getToken();
-        if (!token) return;
+    const socket = new SockJS(`${API_BASE}/ws`);
+    stompClient = Stomp.over(socket);
 
-        try {
-            const response = await fetch(`${API_BASE}/rooms`);
-            if (!response.ok) throw new Error("Ошибка авторизации при получении комнат");
-            
-            const rooms = await response.json();
-            const select = document.getElementById('roomSelect');
-            select.innerHTML = rooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-            
-            if (rooms.length > 0) switchRoom();
-        } catch (err) {
-            console.error(err);
-            document.getElementById('videoDebug').innerText = "Ошибка: " + err.message;
-        }
+    stompClient.connect(
+      {'Authorization': 'Bearer ' + token},
+      () => { // Исправлено: убран неиспользуемый параметр frame
+        document.getElementById('videoDebug').innerText = "Статус: Подключено к WebSocket";
+        subscribeToRoom();
+        loadChatHistory();
+      },
+      (error) => {
+        console.error('STOMP error:', error);
+        document.getElementById('videoDebug').innerText = "Ошибка WebSocket";
+        stompClient = null;
+      }
+    );
+  }
+
+  function subscribeToRoom() {
+    currentSubscription = stompClient.subscribe('/topic/' + currentRoomId, (payload) => {
+      handleIncomingMessage(JSON.parse(payload.body));
+    });
+    stompClient.send(`/app/room/${currentRoomId}/join`, {}, JSON.stringify({}));
+  }
+
+  function sendChatMessage() {
+    const text = document.getElementById('msgInput').value;
+    if(!text || !stompClient?.connected) return;
+    stompClient.send(`/app/room/${currentRoomId}/chat`, {}, JSON.stringify({ message: text }));
+    document.getElementById('msgInput').value = '';
+  }
+
+  async function loadChatHistory() {
+    const chatWindow = document.getElementById('chat-window');
+    if (!stompClient?.connected || !currentRoomId) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/rooms/${currentRoomId}/messages`);
+      const data = await response.json();
+
+      chatWindow.innerHTML = '<div class="event">--- История сообщений ---</div>';
+      const messages = data.content || [];
+      messages.slice().reverse().forEach(msg => {
+        appendChatMessage(msg.authorName, msg.content);
+      });
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    } catch (err) {
+      console.error("История не загружена", err);
     }
+  }
 
-    function switchRoom() {
-        const select = document.getElementById('roomSelect');
-        currentRoomId = select.value;
-        document.getElementById('currentRoomIdDisplay').innerText = currentRoomId;
-        document.getElementById('chat-window').innerHTML = ''; 
-        
-        connectToWs();
+  function sendVideoSignal(action) {
+    if(!stompClient?.connected) return;
+    const ts = parseFloat(document.getElementById('videoRange').value);
+
+    stompClient.send(`/app/room/${currentRoomId}/player`, {}, JSON.stringify({
+      action: action,
+      timestamp: ts,
+      playbackRate: 1.0,
+      sentAt: Date.now()
+    }));
+  }
+
+  function appendChatMessage(sender, text) {
+    const chatWindow = document.getElementById('chat-window');
+    const el = document.createElement('div');
+    el.className = 'message';
+    el.innerHTML = `<b>${sender}:</b> ${text}`;
+    chatWindow.appendChild(el);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function handleIncomingMessage(data) {
+    if (data.type === 'JOIN' || data.type === 'LEAVE') {
+      const el = document.createElement('div');
+      el.className = 'event';
+      el.innerText = `${data.username} ${data.type === 'JOIN' ? 'присоединился' : 'покинул'}`;
+      document.getElementById('chat-window').appendChild(el);
     }
+    else if (data.action) {
+      const range = document.getElementById('videoRange');
+      const label = document.getElementById('timeLabel');
 
-    // --- ЛОГИКА ЭМУЛЯЦИИ ХОДА ВРЕМЕНИ ---
-    function startTicker() {
-        if (playbackInterval) clearInterval(playbackInterval);
-        
-        playbackInterval = setInterval(() => {
-            if (isPlaying) {
-                const range = document.getElementById('videoRange');
-                const label = document.getElementById('timeLabel');
-                
-                let newValue = parseFloat(range.value) + 0.1;
-                
-                if (newValue <= parseFloat(range.max)) {
-                    range.value = newValue.toFixed(1);
-                    label.innerText = newValue.toFixed(2);
-                } else {
-                    isPlaying = false;
-                    clearInterval(playbackInterval);
-                }
-            }
-        }, 100); // 10 раз в секунду
+      document.getElementById('videoDebug').innerText = `Сигнал: ${data.action} на ${data.timestamp}с`;
+
+      range.value = data.timestamp;
+      label.innerText = parseFloat(data.timestamp).toFixed(2);
+
+      if (data.action === 'PLAY') {
+        isPlaying = true;
+        startTicker();
+      } else if (data.action === 'PAUSE') {
+        isPlaying = false;
+        stopTicker();
+      }
     }
-
-    function stopTicker() {
-        clearInterval(playbackInterval);
-        playbackInterval = null;
+    else if (data.message || data.content) {
+      const sender = data.authorName || data.senderName || data.username || 'User';
+      const text = data.message || data.content;
+      appendChatMessage(sender, text);
     }
-
-    function connectToWs() {
-        const token = getToken();
-        if (!token) return;
-
-        if (stompClient && stompClient.connected) {
-            if (currentSubscription) currentSubscription.unsubscribe();
-            subscribeToRoom();
-            return;
-        }
-
-        const socket = new SockJS(`${API_BASE}/ws`);
-        stompClient = Stomp.over(socket);
-        
-        stompClient.connect(
-            {'Authorization': 'Bearer ' + token}, 
-            (frame) => {
-                document.getElementById('videoDebug').innerText = "Статус: Подключено к WebSocket";
-                subscribeToRoom();
-                loadChatHistory();
-            },
-            (error) => {
-                console.error('STOMP error:', error);
-                document.getElementById('videoDebug').innerText = "Ошибка WebSocket";
-                stompClient = null;
-            }
-        );
-    }
-
-    function subscribeToRoom() {
-        currentSubscription = stompClient.subscribe('/topic/' + currentRoomId, (payload) => {
-            handleIncomingMessage(JSON.parse(payload.body));
-        });
-        stompClient.send(`/app/room/${currentRoomId}/join`, {}, JSON.stringify({}));
-    }
-
-    function sendChatMessage() {
-        const text = document.getElementById('msgInput').value;
-        if(!text || !stompClient?.connected) return;
-        stompClient.send(`/app/room/${currentRoomId}/chat`, {}, JSON.stringify({ message: text }));
-        document.getElementById('msgInput').value = '';
-    }
-
-    async function loadChatHistory() {
-        const chatWindow = document.getElementById('chat-window');
-        if (!stompClient?.connected || !currentRoomId) return;
-
-        try {
-            const response = await fetch(`${API_BASE}/rooms/${currentRoomId}/messages`);
-            const data = await response.json();
-            
-            chatWindow.innerHTML = '<div class="event">--- История сообщений ---</div>';
-            const messages = data.content || [];
-            messages.slice().reverse().forEach(msg => {
-                appendChatMessage(msg.authorName, msg.content);
-            });
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        } catch (err) {
-            console.error("История не загружена", err);
-        }
-    }
-
-    function sendVideoSignal(action) {
-        if(!stompClient?.connected) return;
-        const ts = parseFloat(document.getElementById('videoRange').value);
-        
-        stompClient.send(`/app/room/${currentRoomId}/player`, {}, JSON.stringify({
-            action: action,
-            timestamp: ts,
-            playbackRate: 1.0,
-            sentAt: Date.now()
-        }));
-    }
-
-    function appendChatMessage(sender, text) {
-        const chatWindow = document.getElementById('chat-window');
-        const el = document.createElement('div');
-        el.className = 'message';
-        el.innerHTML = `<b>${sender}:</b> ${text}`;
-        chatWindow.appendChild(el);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    function handleIncomingMessage(data) {
-        if (data.type === 'JOIN' || data.type === 'LEAVE') {
-            const el = document.createElement('div');
-            el.className = 'event';
-            el.innerText = `${data.username} ${data.type === 'JOIN' ? 'присоединился' : 'покинул'}`;
-            document.getElementById('chat-window').appendChild(el);
-        } 
-        // ОБРАБОТКА СИГНАЛОВ ПЛЕЕРА
-        else if (data.action) {
-            const range = document.getElementById('videoRange');
-            const label = document.getElementById('timeLabel');
-            
-            document.getElementById('videoDebug').innerText = `Сигнал: ${data.action} на ${data.timestamp}с`;
-            
-            // Синхронизируем положение ползунка
-            range.value = data.timestamp;
-            label.innerText = parseFloat(data.timestamp).toFixed(2);
-
-            if (data.action === 'PLAY') {
-                isPlaying = true;
-                startTicker();
-            } else if (data.action === 'PAUSE') {
-                isPlaying = false;
-                stopTicker();
-            } else if (data.action === 'SEEK') {
-                // Если видео на паузе, просто перемещаем ползунок (уже сделано выше)
-                // Если видео играет, тикер продолжит работу с новой отметки
-            }
-        } 
-        else if (data.message || data.content) {
-            const sender = data.authorName || data.senderName || data.username || 'User';
-            const text = data.message || data.content;
-            appendChatMessage(sender, text);
-        }
-    }
+  }
 </script>
 </body>
 </html>

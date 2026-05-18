@@ -1,44 +1,34 @@
 import { useState } from "react";
-import { Smile, Send, ChevronRight } from "lucide-react";
+import { Smile, Send, ChevronRight, UserPlus, UserMinus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import keycloak from "@/lib/keycloak.ts"
-
-
-type ChatMessage = { id: string; user: string; color: string; text: string };
-const initialMessages: ChatMessage[] = [
-
-];
-
+import type { MessageResponseDto, RoomEventDto } from "@/types/websocket/types.ts";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
 export type ChatVariant = "theater" | "side" | "overlay";
+
 
 export function ChatPanel({
                             variant,
                             onCollapse,
+                            messages,
+                            onSendMessage,
+                            roomEvents,
                           }: {
   variant: ChatVariant;
   onCollapse: () => void;
+  messages: MessageResponseDto[];
+  onSendMessage: (message: string) => void;
+  roomEvents: RoomEventDto[];
 }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [text, setText] = useState("");
 
   const send = () => {
     if (!text.trim()) return;
-
-    const username = keycloak.idTokenParsed?.preferred_username || "Аноним";
-
-    const newMessage: ChatMessage = {
-      id: crypto.randomUUID(),
-      user: username,
-      color: "text-blue-500",
-      text: text.trim(),
-    };
-
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-
+    onSendMessage(text);
     setText("");
   };
+
   return (
     <div
       className={cn(
@@ -60,10 +50,23 @@ export function ChatPanel({
       </div>
       <div className="flex-1 space-y-1.5 overflow-y-auto px-3 py-3 text-sm">
         {messages.map((m) => (
-          <div key={m.id} className="leading-snug">
-            <span className={cn("font-semibold", m.color)}>{m.user}</span>
-            <span className="mx-1 text-muted-foreground">:</span>
-            <span className="text-foreground/90">{m.text}</span>
+          <div key={m.id} className="flex items-start space-x-2 leading-snug">
+            {m.authorAvatar ? (
+                <Avatar className="h-6 w-6 rounded-full">
+                  <AvatarImage src={m.authorAvatar} alt={m.authorName} />
+                  <AvatarFallback>{m.authorName.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold">
+                  {m.authorName.charAt(0).toUpperCase()}
+                </div>
+              )
+            }
+            <div>
+              <span className="font-semibold text-blue-500">{m.authorName}</span>
+              <span className="mx-1 text-muted-foreground">:</span>
+              <span className="text-foreground/90">{m.content}</span>
+            </div>
           </div>
         ))}
       </div>
