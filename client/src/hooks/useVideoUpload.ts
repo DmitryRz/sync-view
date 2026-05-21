@@ -1,13 +1,13 @@
-import { useState, type DragEvent } from "react";
+import { useState } from "react";
 import axios from "axios";
 import keycloak from "@/lib/keycloak";
+import { useDragAndDrop } from "@/hooks/useDragAndDrop.ts"
 
 export const useVideoUpload = (onSuccess?: () => void) => {
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
 
   const handleUpload = async () => {
     if (!file || !title) return alert("Заполни все поля");
@@ -33,19 +33,11 @@ export const useVideoUpload = (onSuccess?: () => void) => {
     }
   };
 
-  const dragHandlers = {
-    onDragOver: (e: DragEvent) => { e.preventDefault(); setIsDragging(true); },
-    onDragLeave: (e: DragEvent) => { e.preventDefault(); setIsDragging(false); },
-    onDrop: (e: DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const droppedFile = e.dataTransfer?.files?.[0];
-      if (droppedFile?.type.startsWith("video/")) {
-        setFile(droppedFile);
-        if (!title) setTitle(droppedFile.name.replace(/\.[^/.]+$/, ""));
-      }
+  const { isDragging, dragHandlers } = useDragAndDrop((droppedFile) => {
+    if (droppedFile.type.startsWith("image/")) {
+      setFile(droppedFile);
     }
-  };
+  });
 
   return {
     state: { isUploadOpen, title, file, uploading, isDragging },
