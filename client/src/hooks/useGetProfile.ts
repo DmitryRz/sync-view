@@ -24,7 +24,6 @@ export const useGetProfile = (userId: string | undefined) => {
 
     } catch (err) {
       if (axios.isCancel(err)) {
-        console.log("Запрос отменен")
         return
       }
       if (axios.isAxiosError(err)) {
