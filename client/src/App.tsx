@@ -8,6 +8,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import { NotImplementedCardPage } from "@/pages/NotImplementedCardPage.tsx"
 import { StompProvider } from "@/context/StompProvider.tsx"
+import ProfilePage from "@/pages/ProfilePage.tsx"
 
 export function App() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -79,6 +80,7 @@ export function App() {
       <Route path="/watch/:roomId" element={<StompProvider><Video /></StompProvider>} />
       <Route path="/video/:videoId" element={<NotImplementedCardPage />} />
       <Route path="/rooms" element={<NotImplementedCardPage />} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
       <Route path="*" element={<NotFoundPage />} />
       <Route path="/keycloak-error" element={<AuthErrorPage />} />
     </Routes>
