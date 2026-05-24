@@ -19,6 +19,7 @@ type Item = {
   icon: React.ComponentType<{ className?: string }>
   label: string
   to?: string
+  onClick?: () => void
 }
 
 type User = {
@@ -41,7 +42,7 @@ const block2: Item[] = [
   { icon: History, label: "История просмотров" },
 ]
 
-function Row({ icon: Icon, label, to }: Item) {
+function Row({ icon: Icon, label, to, onClick }: Item) {
   const cls =
     "group flex w-full items-center gap-5 rounded-lg px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-accent hover:text-accent-foreground"
   if (to)
@@ -52,7 +53,7 @@ function Row({ icon: Icon, label, to }: Item) {
       </Link>
     )
   return (
-    <button className={cls}>
+    <button className={cls} onClick={onClick}>
       <Icon className="h-5 w-5 shrink-0" />
       <span>{label}</span>
     </button>
@@ -68,9 +69,11 @@ interface SidebarProps {
 const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<ErrorInfo | null>(null);
+  const [error, setError] = useState<ErrorInfo | null>(null)
 
-  const fetchUsers = async (controller: AbortController = new AbortController()) => {
+  const fetchUsers = async (
+    controller: AbortController = new AbortController()
+  ) => {
     setError(null)
     try {
       setLoading(true)
@@ -87,12 +90,12 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
       if (axios.isAxiosError(err)) {
         setError({
           message: err.message,
-          status: err.response?.status || 0
-        });
+          status: err.response?.status || 0,
+        })
       } else {
         setError({
-          message: err instanceof Error ? err.message : "Unexpected error"
-        });
+          message: err instanceof Error ? err.message : "Unexpected error",
+        })
       }
     } finally {
       setLoading(false)
@@ -158,38 +161,34 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
           {loading ? (
             <LoadingSpinner />
           ) : error ? (
-              <ErrorState status={error.status} onRetry={fetchUsers} />
-            ) : (
-              <>
-                <div className="px-3 pt-2 pb-1 text-sm font-semibold text-foreground">
-                  Список пользователей
-                </div>
-                {users.map((user) => (
-                  <button
-                    key={user.uuid}
-                    className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-accent"
-                  >
-                    <div className="relative">
-                      <Avatar className="h-8 w-8 rounded-lg">
-                        <AvatarImage
-                          src={user.avatar}
-                          alt={user.username}
-                        />
-                        <AvatarFallback className="rounded-lg">
-                          {user.username.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {/*<span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />*/}
-                    </div>
-                    <span className="transition-colors group-hover:text-primary">
-                {user.username}
-              </span>
-                  </button>
-                ))}
-              </>
-          ) }
-
-
+            <ErrorState status={error.status} onRetry={fetchUsers} />
+          ) : (
+            <>
+              <div className="px-3 pt-2 pb-1 text-sm font-semibold text-foreground">
+                Список пользователей
+              </div>
+              {users.map((user) => (
+                <Link
+                  key={user.uuid}
+                  to={`/profile/${user.uuid}`}
+                  className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-accent"
+                >
+                  <div className="relative">
+                    <Avatar className="h-8 w-8 rounded-lg">
+                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarFallback className="rounded-lg">
+                        {user.username.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {/*<span className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />*/}
+                  </div>
+                  <span className="transition-colors group-hover:text-primary">
+                    {user.username}
+                  </span>
+                </Link>
+              ))}
+            </>
+          )}
         </div>
       </div>
       {mode === "fixed" && isOpen && (

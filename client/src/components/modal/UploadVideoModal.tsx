@@ -9,13 +9,12 @@ import { Button } from "@/components/ui/button.tsx"
 import { Plus } from "lucide-react"
 import { Input } from "@/components/ui/input.tsx"
 import { useVideoUpload } from "@/hooks/useVideoUpload.ts"
+import { useVideos } from "@/hooks/useVideos.ts"
 
-interface UploadVideoModalProps {
-  onVideoUploaded?: ((isInitialLoad?: boolean) => Promise<void>) | undefined
-}
+const UploadVideoModal = () => {
+  const { refetch } = useVideos();
 
-const UploadVideoModal = ({ onVideoUploaded }: UploadVideoModalProps) => {
-  const { state, actions, dragHandlers } = useVideoUpload(onVideoUploaded)
+  const { state, actions, dragHandlers } = useVideoUpload(refetch)
 
   const { isUploadOpen, title, file, uploading, isDragging } = state
   const { setIsUploadOpen, setTitle, setFile, handleUpload } = actions

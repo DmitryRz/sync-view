@@ -10,18 +10,16 @@
   import Logo from "@/components/shared/logo.tsx"
   import keycloak from "@/lib/keycloak.ts"
   import { UserNav } from "@/components/layout/UserNav.tsx"
-  import UploadVideoModal from "@/components/layout/UploadVideoModal.tsx"
+  import UploadVideoModal from "@/components/modal/UploadVideoModal.tsx"
 
   interface HeaderProps {
     setIsOpen: (value: boolean) => void
     isOpen?: boolean
-    onVideoUploaded?: (isInitialLoad?: boolean) => Promise<void>
   }
 
   const Header = ({
     setIsOpen,
     isOpen,
-    onVideoUploaded,
   }: HeaderProps) => {
     return (
       <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur">
@@ -65,7 +63,7 @@
         <ThemeToggle />
         {keycloak.authenticated ? (
           <div className="flex items-center gap-1">
-            <UploadVideoModal onVideoUploaded={onVideoUploaded} />
+            <UploadVideoModal />
             <UserNav />
           </div>
         ) : (

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
 import keycloak from "@/lib/keycloak.ts"
 import type { VideoType } from "@/types/video/Video.ts"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
 
 const VideoCard = ({ video }: { video: VideoType }) => {
   const navigate = useNavigate();
@@ -46,23 +47,27 @@ const VideoCard = ({ video }: { video: VideoType }) => {
           </span>
         )}
       </div>
-      <div className="mt-3 flex gap-3">
-        <div className="h-9 w-9 shrink-0 rounded-full bg-gradient-to-br from-primary/40 to-accent" />
-        <div className="min-w-0">
+      <div className="mt-3 flex items-start gap-3">
+        <Avatar className="h-9 w-9 shrink-0">
+          <AvatarImage src={undefined} alt={video.ownerUsername} />
+          <AvatarFallback>{video.ownerUsername[0].toUpperCase()}</AvatarFallback>
+        </Avatar>
+
+        <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-sm font-bold leading-tight text-foreground">
             {video.title}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">{video.ownerUsername}</p>
         </div>
+
         <div className="shrink-0 mb-0.5">
           <Link
             to={`/video/${video.id}`}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="inline-block rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center rounded-lg bg-secondary px-3 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary/80 transition-colors whitespace-nowrap"
           >
-            Смотреть одному
+            <span className="hidden sm:inline">Смотреть одному</span>
+            <span className="sm:hidden">Смотреть</span>
           </Link>
         </div>
       </div>

@@ -3,31 +3,30 @@ import axios from "axios";
 import keycloak from "@/lib/keycloak";
 import { useDragAndDrop } from "@/hooks/useDragAndDrop.ts"
 
-export const useVideoUpload = (onSuccess?: () => void) => {
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [title, setTitle] = useState("");
+export const useAvatarUpload = (onSuccess?: () => void) => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const handleUpload = async () => {
-    if (!file || !title) return alert("Заполни все поля");
+    if (!file) return alert("Выберите файл");
+
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("file", file);
+    formData.append("avatar", file);
 
     try {
       setUploading(true);
-      await axios.post("/api/videos/upload", formData, {
+      await axios.post("/api/users/upload-avatar", formData, {
         headers: {
           Authorization: `Bearer ${keycloak.token}`,
         },
       });
-      setIsUploadOpen(false);
-      setTitle("");
       setFile(null);
       onSuccess?.();
+      return true
     } catch (err) {
-      console.error("Ошибка загрузки:", err);
+      console.error("Ошибка загрузки аватара:", err);
+      alert("Не удалось загрузить аватар");
+      return false;
     } finally {
       setUploading(false);
     }
@@ -40,8 +39,8 @@ export const useVideoUpload = (onSuccess?: () => void) => {
   });
 
   return {
-    state: { isUploadOpen, title, file, uploading, isDragging },
-    actions: { setIsUploadOpen, setTitle, setFile, handleUpload },
+    state: { file, uploading, isDragging},
+    actions: { setFile, handleUpload },
     dragHandlers
   };
 };

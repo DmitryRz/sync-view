@@ -28,7 +28,12 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getCurrentProfile(@AuthenticationPrincipal UserPrincipal principal) {
         UserResponseDto response = userService.getCurrentProfile(principal.uuid());
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("{userId}")
+    public ResponseEntity<UserResponseDto> getProfileById(@PathVariable UUID userId) {
+        UserResponseDto response = userService.getCurrentProfile(userId);
         return ResponseEntity.ok(response);
     }
 

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu.tsx"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
+import { Link } from "react-router-dom"
 
 export const UserNav = () => {
   const username: string | undefined = keycloak.idTokenParsed?.preferred_username;
@@ -46,9 +47,11 @@ export const UserNav = () => {
         align="end"
         sideOffset={4}
       >
-        <DropdownMenuItem>
-          <User className="mr-2 size-4" />
-          Профиль
+        <DropdownMenuItem asChild>
+          <Link to={`/profile/${sub}`}>
+            <User className="mr-2 size-4" />
+            Профиль
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => keycloak.logout()}>
