@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator.tsx"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import { ErrorState } from "@/components/ui/ErrorState.tsx"
+import CreateRoomModal from "@/components/modal/CreateRoomModal.tsx"
+import keycloak from "@/lib/keycloak.ts"
 
 export interface ErrorInfo {
   message: string;
@@ -30,17 +32,6 @@ type User = {
 }
 
 type LayoutMode = "push" | "fixed"
-
-const block1: Item[] = [
-  { icon: House, label: "Главная", to: "/" },
-  { icon: Globe, label: "Публичные комнаты", to: "/rooms" },
-  { icon: CirclePlus, label: "Создать комнату" },
-]
-
-const block2: Item[] = [
-  { icon: Users, label: "Мои комнаты" },
-  { icon: History, label: "История просмотров" },
-]
 
 function Row({ icon: Icon, label, to, onClick }: Item) {
   const cls =
@@ -67,9 +58,26 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
+
+  const [isCreateRoomOpen, setIsCreateRoomOpen] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<ErrorInfo | null>(null)
+
+  const block1: Item[] = [
+    { icon: House, label: "Главная", to: "/" },
+    { icon: Globe, label: "Публичные комнаты", to: "/rooms" },
+  ]
+
+  const block2: Item[] = !keycloak.authenticated ? [] : [
+    {
+      icon: CirclePlus,
+      label: "Создать комнату",
+      onClick: () => setIsCreateRoomOpen(true)
+    },
+    { icon: Users, label: "Мои комнаты" },
+    { icon: History, label: "История просмотров" },
+  ]
 
   const fetchUsers = async (
     controller: AbortController = new AbortController()
@@ -109,7 +117,9 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
   }, [])
 
   return (
-    <aside
+    <>
+      <CreateRoomModal open={isCreateRoomOpen} onOpenChange={setIsCreateRoomOpen} />
+      <aside
       className={cn(
         "z-40 shrink-0 bg-background transition-all duration-300 ease-in-out",
         mode === "push" ? (isOpen ? "w-64 border-r" : "w-0 border-r-0") : "w-0",
@@ -150,13 +160,15 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
           {block1.map((i) => (
             <Row key={i.label} {...i} />
           ))}
-          <Separator className="my-2" />
-          <div className="px-3 pt-2 pb-1 text-sm font-semibold text-foreground">
-            Вы
-          </div>
-          {block2.map((i) => (
-            <Row key={i.label} {...i} />
-          ))}
+          {block2.length !== 0 && <>
+            <Separator className="my-2" />
+            <div className="px-3 pt-2 pb-1 text-sm font-semibold text-foreground">
+              Вы
+            </div>
+            {block2.map((i) => (
+              <Row key={i.label} {...i} />
+            ))}
+          </>}
           <Separator className="my-2" />
           {loading ? (
             <LoadingSpinner />
@@ -198,6 +210,7 @@ const Sidebar = ({ isOpen, setIsOpen, mode }: SidebarProps) => {
         />
       )}
     </aside>
+    </>
   )
 }
 

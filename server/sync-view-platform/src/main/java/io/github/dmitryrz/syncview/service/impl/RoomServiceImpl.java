@@ -47,11 +47,19 @@ public class RoomServiceImpl implements RoomService {
     @Transactional
     public RoomResponseDto createRoom(RoomRequestDto request, UUID userUuid) {
         User user = userRepository.getReferenceById(userUuid);
-        Video video = videoRepository.findById(request.getVideoId()).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Видео с таким ID не найдено"
-        ));
-        Room room = roomMapper.toEntity(request, user, video);
+
+        Room room = roomMapper.toEntity(request, user);
+
+        if (request.getVideoId() != null) {
+            Video video = videoRepository.findById(request.getVideoId()).orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Видео с таким ID не найдено"
+                    ));
+            room.setInternalVideo(video);
+        } else {
+            room.setExternalVideo(request.getExternalUrl());
+        }
+
         room = roomRepository.save(room);
         return roomMapper.toDto(room);
     }

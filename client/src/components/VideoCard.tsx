@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx"
 
 const VideoCard = ({ video }: { video: VideoType }) => {
   const navigate = useNavigate();
+  const sub = keycloak.idTokenParsed?.sub;
 
   const handleVideoClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -49,7 +50,7 @@ const VideoCard = ({ video }: { video: VideoType }) => {
       </div>
       <div className="mt-3 flex items-start gap-3">
         <Avatar className="h-9 w-9 shrink-0">
-          <AvatarImage src={undefined} alt={video.ownerUsername} />
+          <AvatarImage src={`/api/users/${sub}/avatar`} alt={video.ownerUsername} />
           <AvatarFallback>{video.ownerUsername[0].toUpperCase()}</AvatarFallback>
         </Avatar>
 
