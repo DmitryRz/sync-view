@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog.tsx"
 import { Button } from "@/components/ui/button.tsx"
 import { Input } from "@/components/ui/input.tsx"
+import type { ErrorInfo } from "@/components/layout/Sidebar.tsx"
+import keycloak from "@/lib/keycloak.ts"
 
 interface CreateRoomModalProps {
   open: boolean;
@@ -20,32 +22,78 @@ const CreateRoomModal = ({ open, onOpenChange }: CreateRoomModalProps) => {
   const [name, setName] = useState("")
   const [externalUrl, setExternalUrl] = useState("")
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState<ErrorInfo | null>(null)
 
   const handleCreateRoom = async () => {
     if (!name.trim() || !externalUrl.trim()) {
-      setError("Пожалуйста, заполните все поля")
+      setError({ message: "Пожалуйста, заполните все поля" })
       return
+    }
+
+    const trimmedName = name.trim();
+    const trimmedUrl = externalUrl.trim();
+
+    try {
+      new URL(trimmedUrl);
+
+      const headResponse = await axios.head(trimmedUrl).catch((err) => {
+        console.warn("HEAD запрос не удался, пробуем обычный GET для заголовков", err)
+        return axios.get(trimmedUrl, { headers: { Range: "bytes=0-0" } })
+      })
+
+      const contentType = String(headResponse.headers["content-type"] || "").toLowerCase()
+
+      const isMp4 = contentType.includes("video/mp4")
+      const isHls = contentType.includes("mpegurl") || contentType.includes("apple.mpegurl")
+
+      if (!isMp4 && !isHls) {
+        setError({message: `Неподдерживаемый формат видео (${contentType || "неизвестно"}). Ссылка должна вести на прямой видеофайл MP4 или M3U8 стрим.`})
+        setLoading(false)
+        return
+      }
+    } catch {
+      setError({
+        message: "Введите корректную ссылку"
+      })
+      return;
     }
 
     try {
       setLoading(true)
-      setError("")
+      setError(null)
 
       const response = await axios.post("/api/rooms", {
-        name: name.trim(),
-        externalUrl: externalUrl.trim(),
+        name: trimmedName,
+        externalUrl: trimmedUrl,
+      }, {
+        headers: {
+          "Authorization": `Bearer ${keycloak.token}`,
+        }
       })
 
       setName("")
       setExternalUrl("")
-      onOpenChange(false) // Закрываем через внешний метод
+      onOpenChange(false)
 
       const createdRoomId = response.data.id
-      navigate(`/rooms/${createdRoomId}`)
-    } catch (err: any) {
-      console.error("Ошибка при создании комнаты:", err)
-      setError(err.response?.data?.message || "Не удалось создать комнату")
+      navigate(`/watch/${createdRoomId}`)
+    }catch (err) {
+      console.error("Ошибка не удалось создать комнату: ", err);
+      alert("Не удалось создать комнату");
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          setError({
+            message: "Вы не авторизованы"
+          })
+        }
+        else {
+          setError({
+            message: err.message,
+            status: err.response?.status || 0,
+          })
+        }
+      }
+      return false;
     } finally {
       setLoading(false)
     }
@@ -61,7 +109,7 @@ const CreateRoomModal = ({ open, onOpenChange }: CreateRoomModalProps) => {
         <div className="relative grid gap-4 pbe-4">
           {error && (
             <p className="text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md">
-              {error}
+              {error.message}
             </p>
           )}
 
