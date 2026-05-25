@@ -4,6 +4,7 @@ import io.github.dmitryrz.syncview.domain.model.UserPrincipal;
 import io.github.dmitryrz.syncview.dto.request.RoomRequestDto;
 import io.github.dmitryrz.syncview.dto.response.RoomResponseDto;
 import io.github.dmitryrz.syncview.service.RoomService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,7 @@ public class RoomController {
     }
 
     @PostMapping
-    public ResponseEntity<RoomResponseDto> createRoom(@RequestBody RoomRequestDto request, @AuthenticationPrincipal UserPrincipal principal) {
+    public ResponseEntity<RoomResponseDto> createRoom(@Valid @RequestBody RoomRequestDto request, @AuthenticationPrincipal UserPrincipal principal) {
         UUID userUuid = principal.uuid();
         RoomResponseDto response = roomService.createRoom(request, userUuid);
 
