@@ -54,7 +54,6 @@ const Video = () => {
 
   const stompClient = useStomp();
 
-
   useEffect(() => {
     const fetchRoomAndVideo = async () => {
       try {
@@ -104,7 +103,7 @@ const Video = () => {
     };
 
     if (roomId) {
-      fetchRoomAndVideo();
+      void fetchRoomAndVideo();
     }
   }, [roomId]);
 

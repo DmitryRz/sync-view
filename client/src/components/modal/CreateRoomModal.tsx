@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button.tsx"
 import { Input } from "@/components/ui/input.tsx"
 import type { ErrorInfo } from "@/components/layout/Sidebar.tsx"
 import keycloak from "@/lib/keycloak.ts"
+import { validateUrl } from "@/lib/validateVideoUrl.ts"
 
 interface CreateRoomModalProps {
   open: boolean;
@@ -35,26 +36,20 @@ const CreateRoomModal = ({ open, onOpenChange }: CreateRoomModalProps) => {
 
     try {
       new URL(trimmedUrl);
-
-      const headResponse = await axios.head(trimmedUrl).catch((err) => {
-        console.warn("HEAD запрос не удался, пробуем обычный GET для заголовков", err)
-        return axios.get(trimmedUrl, { headers: { Range: "bytes=0-0" } })
-      })
-
-      const contentType = String(headResponse.headers["content-type"] || "").toLowerCase()
-
-      const isMp4 = contentType.includes("video/mp4")
-      const isHls = contentType.includes("mpegurl") || contentType.includes("apple.mpegurl")
-
-      if (!isMp4 && !isHls) {
-        setError({message: `Неподдерживаемый формат видео (${contentType || "неизвестно"}). Ссылка должна вести на прямой видеофайл MP4 или M3U8 стрим.`})
+      const {isSupported, pureMimeType} = await validateUrl(trimmedUrl);
+      if (!isSupported) {
+        setError({
+          message: `Неподдерживаемый формат видео (${pureMimeType || "неизвестно"}). Ссылка должна вести на прямой видеофайл (MP4, WEBM, MOV) или HLS-стрим (.M3U8).`
+        })
         setLoading(false)
         return
       }
-    } catch {
+    } catch (err) {
+      console.error(err)
       setError({
-        message: "Введите корректную ссылку"
+        message: "Введите корректную ссылку или проверьте доступность видео-файла."
       })
+      setLoading(false)
       return;
     }
 
