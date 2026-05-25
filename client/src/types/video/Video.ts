@@ -1,8 +1,8 @@
 export type VideoType = {
-  id: number
+  id: number | null
   title: string
   url: string
-  duration: number
+  duration: number | null
   ownerUsername: string
   createdAt: string
 }

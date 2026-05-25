@@ -1,30 +1,38 @@
 import Header from "@/components/layout/Header.tsx"
 import Sidebar from "@/components/layout/Sidebar.tsx"
 import { Link, useParams } from "react-router-dom"
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"
 import {
-  MessagesSquare,
-  Maximize,
-  Minimize,
-  ThumbsUp,
-  ThumbsDown,
-  Share2,
   ChevronLeft,
-  PanelRight,
   Layers,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+  Maximize,
+  MessagesSquare,
+  Minimize,
+  PanelRight,
+  Share2,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { VideoPlayer } from "@/components/VideoPlayer.tsx"
 import { ChatPanel, type ChatVariant } from "@/components/ChatPanel.tsx"
 import axios from "axios"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import type { VideoType } from "@/types/video/Video.ts"
-import keycloak from "@/lib/keycloak.ts";
-import type Player from "video.js/dist/types/player";
-import type { MessageResponseDto, RoomEventDto, VideoSignalDto } from "@/types/websocket/types.ts";
-import { PlayerAction, RoomEventType } from "@/types/websocket/enums.ts";
+import keycloak from "@/lib/keycloak.ts"
+import type Player from "video.js/dist/types/player"
+import type { MessageResponseDto, RoomEventDto, VideoSignalDto } from "@/types/websocket/types.ts"
+import { PlayerAction, RoomEventType } from "@/types/websocket/enums.ts"
 import { useStomp } from "@/context/StompContext.ts"
+
+const getLocalDateTimeNow = () => {
+  const now = new Date();
+
+  const offset = now.getTimezoneOffset() * 60000;
+
+  return (new Date(now.getTime() - offset).toISOString().slice(0, -1));
+};
 
 type ChatItem =
   | { type: "message"; data: MessageResponseDto }
@@ -51,19 +59,36 @@ const Video = () => {
     const fetchRoomAndVideo = async () => {
       try {
         setLoading(true);
-        const roomResponse = await axios.get(`/api/rooms/${roomId}`);
-
-        const videoId = roomResponse.data.videoId;
-
-        const [videoDetailResponse, messagesResponse] = await Promise.all([
-          axios.get(`/api/videos/${videoId}`),
+        const [roomResponse, messagesResponse] = await Promise.all([
+          axios.get(`/api/rooms/${roomId}`),
           axios.get(`/api/rooms/${roomId}/messages`)
         ]);
 
-        setVideo({
-          ...videoDetailResponse.data,
-          url: roomResponse.data.currentVideo
-        });
+        const roomData = roomResponse.data;
+        const videoId = roomData.videoId
+        if (videoId) {
+          const [videoDetailResponse] = await Promise.all([
+            axios.get(`/api/videos/${videoId}`),
+          ])
+
+          setVideo({
+            ...videoDetailResponse.data,
+            url: roomResponse.data.currentVideo
+          });
+        }
+        else {
+          const Video: VideoType = {
+            id: null,
+            title: "Внешнее видео",
+            url: roomData.currentVideo,
+            duration: null,
+            ownerUsername: roomData.currentUsername,
+            createdAt: getLocalDateTimeNow()
+          }
+          console.log("video", videoId);
+          setVideo(Video)
+        }
+
 
         const historyMessages = messagesResponse.data.content.reverse().map((m: MessageResponseDto) => ({
           type: "message" as const,
