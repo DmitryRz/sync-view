@@ -21,7 +21,7 @@ public interface RoomMapper {
 
     default String resolveVideoTitleOrUrl(Room room) {
         if (room.getCurrentVideo() != null) {
-            return room.getCurrentVideo().getTitle();
+            return room.getCurrentVideo().getUrl();
         }
         return room.getExternalVideoUrl();
     }
