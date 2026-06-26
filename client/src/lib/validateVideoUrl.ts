@@ -20,7 +20,7 @@ export function validateUrl(url: string) {
       const contentType = String(response.headers["content-type"] || "").toLowerCase();
       const pureMimeType = contentType.split(";")[0].trim();
       const isSupported = ALLOWED_VIDEO_TYPES.includes(pureMimeType);
-
+      console.log("contentType", pureMimeType);
       return { isSupported, pureMimeType };
     })
     .catch(() => {

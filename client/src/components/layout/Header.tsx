@@ -15,11 +15,13 @@
   interface HeaderProps {
     setIsOpen: (value: boolean) => void
     isOpen?: boolean
+    onUploadSuccess: () => void
   }
 
   const Header = ({
     setIsOpen,
     isOpen,
+    onUploadSuccess,
   }: HeaderProps) => {
     return (
       <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur">
@@ -63,7 +65,7 @@
         <ThemeToggle />
         {keycloak.authenticated ? (
           <div className="flex items-center gap-1">
-            <UploadVideoModal />
+            <UploadVideoModal onSuccess={onUploadSuccess} />
             <UserNav />
           </div>
         ) : (

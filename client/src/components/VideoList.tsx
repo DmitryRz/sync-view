@@ -1,15 +1,19 @@
 import VideoCard from "@/components/VideoCard.tsx"
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner.tsx"
 import { ErrorState } from "@/components/ui/ErrorState.tsx"
-import { useVideos } from "@/hooks/useVideos.ts"
 import { Film } from "lucide-react"
+import type { VideoType } from "@/types/video/Video.ts"
+import type { ErrorInfo } from "@/components/layout/Sidebar.tsx"
 
 interface VideoListProps {
   username?: string | undefined
+  videos: VideoType[],
+  loading: boolean,
+  error: ErrorInfo | null,
+  refetch: () => void,
 }
 
-const VideoList = ({ username }: VideoListProps ) => {
-  const { videos, loading, error, refetch } = useVideos();
+const VideoList = ({ username, videos, loading, error, refetch }: VideoListProps ) => {
 
   if (loading) return <LoadingSpinner />
   if (error) return <ErrorState status={error.status} onRetry={refetch} />

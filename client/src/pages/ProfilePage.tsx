@@ -17,11 +17,13 @@ import { ErrorState } from "@/components/ui/ErrorState.tsx"
 
 import keycloak from "@/lib/keycloak.ts"
 import UploadAvatarModal from "@/components/modal/UploadAvatarModal.tsx"
+import { useVideos } from "@/hooks/useVideos"
 
 const Profile = () => {
   const { userId } = useParams()
   const sub = keycloak.idTokenParsed?.sub
-
+  const { videos, loading, errorVideo, refetch } = useVideos();
+  
   const [isOpen, setIsOpen] = useState(false)
 
   const { user, loading: loadingProfile, error, getProfile } = useGetProfile(userId)
@@ -32,7 +34,7 @@ const Profile = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Header isOpen={isOpen} setIsOpen={setIsOpen} />
+      <Header isOpen={isOpen} setIsOpen={setIsOpen} onUploadSuccess={refetch} />
 
       <div className="relative flex flex-1 overflow-hidden">
         <Sidebar isOpen={isOpen} setIsOpen={setIsOpen} mode="fixed" />
@@ -62,7 +64,7 @@ const Profile = () => {
               <TabsTrigger value="friends">Друзья</TabsTrigger>
             </TabsList>
             <TabsContent value="videos" className="mt-6">
-              <VideoList username={user?.username} />
+              <VideoList videos={videos} loading={loading} error={errorVideo} refetch={refetch} username={user?.username} />
             </TabsContent>
             <TabsContent value="friends" className="mt-6">
               <FriendsList />

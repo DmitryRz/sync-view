@@ -21,10 +21,10 @@ import { useRooms } from "@/hooks/useRooms.ts"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const roomMetadata = [
-  { name: "Киновечер", creator: "Alex", icon: Tv, viewers: 4 },
-  { name: "Gamer's Hub", creator: "GamerGirl", icon: Monitor, viewers: 8 },
-  { name: "Аниме марафон", creator: "Maria", icon: Zap, viewers: 2 },
-  { name: "Chill Zone", creator: "Admin", icon: Film, viewers: 3 },
+  { name: "Киновечер", creator: "Alex", icon: Tv, viewers: 0 },
+  { name: "Киновечер", creator: "GamerGirl", icon: Monitor, viewers: 0 },
+  { name: "Киновечер", creator: "Maria", icon: Zap, viewers: 0 },
+  { name: "Киновечер", creator: "Admin", icon: Film, viewers: 0 },
   { name: "Утренний кофе", creator: "CoffeeLover", icon: Coffee, viewers: 12 },
   { name: "Lo-Fi Beats", creator: "DJ_Chill", icon: Music, viewers: 25 },
   { name: "Клуб чтения", creator: "BookWorm", icon: BookOpen, viewers: 6 },
